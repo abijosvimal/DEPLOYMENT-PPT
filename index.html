@@ -1,603 +1,835 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>SLP Demo — From Idea to Live App in 90 Minutes</title>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SLP Demo — Zero to Deployed</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#080818;--surface:#0f0f2a;--card:rgba(255,255,255,0.04);
-  --border:rgba(255,255,255,0.08);--purple:#a855f7;--cyan:#22d3ee;
-  --pink:#f472b6;--green:#34d399;--yellow:#fbbf24;
-  --text:#f0f0ff;--muted:#8888aa;--code-bg:rgba(0,0,0,0.4)
-}
-html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Outfit',sans-serif;color:var(--text)}
-#progress-bar{position:fixed;top:0;left:0;height:3px;z-index:100;background:linear-gradient(90deg,var(--purple),var(--cyan));transition:width .4s ease;border-radius:0 2px 2px 0;box-shadow:0 0 12px var(--purple)}
-#deck{width:100vw;height:100vh;position:relative}
-.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:48px;opacity:0;pointer-events:none;transform:translateX(60px);transition:opacity .45s ease,transform .45s ease;background:var(--bg);overflow:hidden}
-.slide::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(168,85,247,0.08) 0%,transparent 70%),radial-gradient(ellipse 60% 50% at 100% 100%,rgba(34,211,238,0.05) 0%,transparent 60%);pointer-events:none}
-.slide.active{opacity:1;pointer-events:all;transform:translateX(0)}
-.slide.exit-left{opacity:0;transform:translateX(-60px)}
-#nav{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:16px;z-index:100;background:rgba(255,255,255,0.05);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:50px;padding:10px 20px}
-.nav-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,0.06);color:var(--text);font-size:18px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
-.nav-btn:hover{background:var(--purple);border-color:var(--purple);box-shadow:0 0 16px rgba(168,85,247,.5)}
-#slide-counter{font-size:13px;color:var(--muted);min-width:64px;text-align:center}
-.section-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:50px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:18px}
-.badge-hook{background:rgba(251,191,36,.15);color:var(--yellow);border:1px solid rgba(251,191,36,.3)}
-.badge-ai{background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.25)}
-.badge-prompt{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid rgba(168,85,247,.3)}
-.badge-agy{background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.25)}
-.badge-github{background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.25)}
-.badge-vercel{background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.25)}
-.badge-flow{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid rgba(168,85,247,.3)}
-.badge-wrap{background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.25)}
-.badge-activity{background:rgba(251,191,36,.15);color:var(--yellow);border:1px solid rgba(251,191,36,.3)}
-h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:900;line-height:1.1;text-align:center}
-h2{font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:800;line-height:1.2;text-align:center;margin-bottom:10px}
-p{font-size:clamp(.9rem,1.5vw,1.1rem);color:var(--muted);line-height:1.7;text-align:center;max-width:720px}
-.gradient-text{background:linear-gradient(135deg,var(--purple),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.gradient-text-warm{background:linear-gradient(135deg,var(--yellow),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 24px;backdrop-filter:blur(10px)}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:860px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%;max-width:920px}
-.code-block{background:var(--code-bg);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px 22px;font-family:'Fira Code',monospace;font-size:clamp(.78rem,1.2vw,.92rem);line-height:1.9;color:#e2e8f0;text-align:left;width:100%;max-width:800px}
-.kw{color:var(--purple)}.str{color:var(--green)}.cm{color:var(--muted);font-style:italic}.hl{background:rgba(168,85,247,.2);border-radius:4px;padding:1px 5px}
-.pill-list{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:800px}
-.pill{padding:7px 18px;border-radius:50px;font-size:.88rem;font-weight:600;border:1px solid var(--border);background:rgba(255,255,255,.05);display:flex;align-items:center;gap:6px}
-.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:880px;width:100%}
-.compare-col{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
-.compare-col.bad{border-color:rgba(239,68,68,.3)}.compare-col.good{border-color:rgba(52,211,153,.3)}
-.compare-col h4{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;font-weight:700}
-.compare-col.bad h4{color:#ef4444}.compare-col.good h4{color:var(--green)}
-.compare-col li{list-style:none;font-size:.88rem;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border);line-height:1.5}
-.compare-col li:last-child{border-bottom:none}
-.activity-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.25);border-radius:18px;padding:24px 32px;max-width:800px;width:100%}
-.activity-box h3{color:var(--yellow);margin-bottom:14px;font-size:1.1rem}
-.activity-step{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;text-align:left}
-.step-num{width:26px;height:26px;border-radius:50%;background:var(--yellow);color:#000;font-weight:800;font-size:.82rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.step-text{font-size:.93rem;color:var(--text);line-height:1.6}
-.flow{display:flex;flex-direction:column;align-items:center;gap:0;max-width:500px;width:100%}
-.flow-step{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 24px;width:100%;text-align:center;font-weight:600;font-size:.98rem;transition:.3s}
-.flow-step:hover{border-color:var(--purple);box-shadow:0 0 20px rgba(168,85,247,.2)}
-.flow-arrow{color:var(--purple);font-size:1.3rem;padding:3px 0;opacity:.7}
-.checklist{list-style:none;text-align:left;max-width:660px;width:100%}
-.checklist li{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:.93rem;line-height:1.5}
-.checklist li:last-child{border-bottom:none}
-.checklist .icon{font-size:1rem;margin-top:2px;flex-shrink:0}
-.checklist .desc{color:var(--muted);font-size:.82rem;display:block;margin-top:2px}
-.final-box{background:linear-gradient(135deg,rgba(168,85,247,.15),rgba(34,211,238,.1));border:1px solid rgba(168,85,247,.35);border-radius:24px;padding:40px 56px;max-width:720px;text-align:center}
-.title-chain{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:22px}
-.chain-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:7px 18px;font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:7px}
-.chain-arrow{color:var(--purple);font-size:1.1rem}
-.slide.active .anim-up{animation:slideUp .5s ease forwards;animation-delay:var(--d,0s);opacity:0}
-@keyframes slideUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
-#speaker-btn{position:fixed;top:16px;right:16px;z-index:200;background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.78rem;cursor:pointer;transition:.2s}
-#speaker-btn:hover{background:rgba(255,255,255,.12);color:var(--text)}
-#speaker-note{position:fixed;bottom:82px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.88);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:14px;padding:14px 22px;max-width:700px;width:90%;font-size:.86rem;color:var(--muted);line-height:1.6;display:none;z-index:150}
-#speaker-note.visible{display:block}
-#speaker-note strong{color:var(--yellow)}
-#key-hint{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:5px 14px;font-size:.73rem;color:var(--muted);z-index:100;transition:opacity 1s}
-#key-hint.hidden{opacity:0;pointer-events:none}
-@media(max-width:768px){.slide{padding:20px 16px}.grid-2,.grid-3,.compare{grid-template-columns:1fr}.title-chain{gap:6px}.chain-item{padding:5px 12px;font-size:.82rem}}
+:root{--bg:#07071a;--s:rgba(255,255,255,.04);--b:rgba(255,255,255,.08);--p:#a855f7;--c:#22d3ee;--g:#34d399;--y:#fbbf24;--pk:#f472b6;--r:#ef4444;--tx:#f0f0ff;--mu:#8899aa;--cb:rgba(0,0,0,.45)}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Outfit',sans-serif;color:var(--tx)}
+canvas#bg{position:fixed;inset:0;z-index:0;opacity:.55}
+#deck{position:fixed;inset:0;z-index:1}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:50px 60px;opacity:0;pointer-events:none;transform:translateX(80px) scale(.97);transition:opacity .5s cubic-bezier(.4,0,.2,1),transform .5s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.slide.active{opacity:1;pointer-events:all;transform:none}
+.slide.prev{opacity:0;transform:translateX(-80px) scale(.97)}
+/* section break slides */
+.slide.sec-break{justify-content:center;align-items:center;text-align:center}
+.sec-break.s1{background:linear-gradient(135deg,#0a0a2e 0%,#0d1545 60%,#0a1a30 100%)}
+.sec-break.s2{background:linear-gradient(135deg,#150a2e 0%,#1a0d3d 60%,#120a28 100%)}
+.sec-break.s3{background:linear-gradient(135deg,#1a1000 0%,#2a1800 60%,#1a1200 100%)}
+/* glow overlays per part */
+.slide::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 75% 55% at 50% -10%,rgba(168,85,247,.09),transparent 65%),radial-gradient(ellipse 50% 45% at 100% 110%,rgba(34,211,238,.06),transparent 60%)}
+/* TYPOGRAPHY */
+h1{font-size:clamp(2rem,5vw,3.8rem);font-weight:900;line-height:1.1;text-align:center}
+h2{font-size:clamp(1.5rem,3.2vw,2.4rem);font-weight:800;line-height:1.15;text-align:center;margin-bottom:8px}
+h3{font-size:clamp(1.1rem,2vw,1.5rem);font-weight:700;margin-bottom:6px}
+p{font-size:clamp(.88rem,1.4vw,1.05rem);color:var(--mu);line-height:1.7;text-align:center;max-width:700px}
+.gt{background:linear-gradient(120deg,var(--p),var(--c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.gy{background:linear-gradient(120deg,var(--y),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.gg{background:linear-gradient(120deg,var(--g),var(--c));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:50px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:16px}
+.badge-p{background:rgba(168,85,247,.15);color:var(--p);border:1px solid rgba(168,85,247,.3)}
+.badge-c{background:rgba(34,211,238,.12);color:var(--c);border:1px solid rgba(34,211,238,.25)}
+.badge-g{background:rgba(52,211,153,.12);color:var(--g);border:1px solid rgba(52,211,153,.25)}
+.badge-y{background:rgba(251,191,36,.15);color:var(--y);border:1px solid rgba(251,191,36,.3);animation:shimmer 2.5s infinite}
+.badge-r{background:rgba(239,68,68,.15);color:var(--r);border:1px solid rgba(239,68,68,.35)}
+.badge-pk{background:rgba(244,114,182,.12);color:var(--pk);border:1px solid rgba(244,114,182,.25)}
+@keyframes shimmer{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0)}50%{box-shadow:0 0 14px 2px rgba(251,191,36,.25)}}
+.live-dot{width:10px;height:10px;background:var(--r);border-radius:50%;display:inline-block;animation:pulse-dot 1.2s infinite}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
+/* CARDS */
+.card{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:18px 22px;transition:.25s}
+.card:hover{border-color:rgba(168,85,247,.35);box-shadow:0 0 22px rgba(168,85,247,.12)}
+.card.c-p{border-color:rgba(168,85,247,.35);background:rgba(168,85,247,.07)}
+.card.c-c{border-color:rgba(34,211,238,.3);background:rgba(34,211,238,.06)}
+.card.c-g{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.06)}
+.card.c-y{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.06)}
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:860px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;width:100%;max-width:920px}
+.g-wide{max-width:980px;width:100%}
+/* CODE */
+.code{background:var(--cb);border:1px solid var(--b);border-radius:10px;padding:16px 20px;font-family:'Fira Code',monospace;font-size:clamp(.76rem,1.1vw,.9rem);line-height:1.9;color:#e2e8f0;text-align:left;width:100%}
+.kw{color:var(--p)}.str{color:var(--g)}.cm{color:var(--mu);font-style:italic}.hl{background:rgba(168,85,247,.2);border-radius:4px;padding:1px 5px}
+/* COMPARE */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:880px;width:100%}
+.cmp-col{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:16px 20px}
+.cmp-col.bad{border-color:rgba(239,68,68,.3)}.cmp-col.good{border-color:rgba(52,211,153,.3)}
+.cmp-col h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;font-weight:700}
+.cmp-col.bad h4{color:var(--r)}.cmp-col.good h4{color:var(--g)}
+.cmp-col li{list-style:none;font-size:.87rem;color:var(--mu);padding:5px 0;border-bottom:1px solid var(--b);line-height:1.5}
+.cmp-col li:last-child{border-bottom:none}
+/* CHECKLIST */
+.chk{list-style:none;text-align:left;max-width:660px;width:100%}
+.chk li{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--b);font-size:.91rem;line-height:1.5}
+.chk li:last-child{border-bottom:none}
+.chk .ic{flex-shrink:0;margin-top:2px}
+.chk .sub{color:var(--mu);font-size:.8rem;display:block;margin-top:2px}
+/* ACTIVITY BOX */
+.act-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.28);border-radius:18px;padding:22px 30px;max-width:800px;width:100%}
+.act-step{display:flex;align-items:flex-start;gap:11px;margin-bottom:11px;text-align:left}
+.sn{width:26px;height:26px;border-radius:50%;background:var(--y);color:#000;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.st{font-size:.91rem;line-height:1.6}
+/* FLOW */
+.flow{display:flex;flex-direction:column;align-items:center;gap:0;width:100%;max-width:480px}
+.fstep{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:10px 22px;width:100%;text-align:center;font-weight:600;font-size:.93rem;transition:.25s}
+.fstep:hover{border-color:var(--p);box-shadow:0 0 18px rgba(168,85,247,.18)}
+.farrow{color:var(--p);font-size:1.2rem;padding:3px 0;opacity:.7}
+/* FLIP CARDS */
+.flip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;max-width:900px;width:100%}
+.flip-card{height:148px;perspective:800px;cursor:pointer}
+.flip-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:14px;border:1px solid var(--b)}
+.flip-front{background:var(--s)}
+.flip-back{background:rgba(168,85,247,.09);border-color:rgba(168,85,247,.35);transform:rotateY(180deg);justify-content:flex-start;align-items:flex-start;padding:14px 16px}
+.flip-front .ico{font-size:2rem;margin-bottom:8px}
+.flip-front .nm{font-weight:700;font-size:.97rem}
+.flip-front .co{font-size:.76rem;color:var(--mu)}
+.flip-back .fb-title{font-size:.82rem;font-weight:700;color:var(--p);margin-bottom:6px}
+.flip-back .fb-item{font-size:.78rem;color:var(--mu);margin-bottom:4px;line-height:1.4}
+.flip-hint{font-size:.7rem;color:var(--mu);text-align:center;margin-top:8px;opacity:.7}
+/* PILLS */
+.pills{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:800px}
+.pill{padding:6px 16px;border-radius:50px;font-size:.84rem;font-weight:600;border:1px solid var(--b);background:var(--s);display:flex;align-items:center;gap:5px}
+/* SECTION BREAK CONTENT */
+.sec-num{font-size:clamp(4rem,12vw,9rem);font-weight:900;line-height:1;opacity:.07;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;letter-spacing:-.05em}
+.sec-title{font-size:clamp(1.8rem,5vw,3.5rem);font-weight:900;text-align:center;margin-bottom:12px}
+.sec-sub{font-size:clamp(.9rem,1.6vw,1.1rem);color:var(--mu);max-width:580px;text-align:center;line-height:1.7;margin-bottom:20px}
+.sec-chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.sec-chip{padding:8px 20px;border-radius:50px;font-weight:700;font-size:.9rem;border:1px solid}
+/* PIPELINE ANIMATION */
+.pipe-wrap{display:flex;flex-direction:column;align-items:center;gap:0;max-width:420px;width:100%}
+.pipe-node{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:10px 22px;width:100%;text-align:center;font-weight:600;font-size:.91rem;position:relative}
+.pipe-node.active-pipe{border-color:var(--c);box-shadow:0 0 18px rgba(34,211,238,.2)}
+.pipe-dot{width:8px;height:8px;background:var(--p);border-radius:50%;margin:3px auto;animation:pipe-flow 1.8s ease-in-out infinite;opacity:0}
+@keyframes pipe-flow{0%{opacity:0;transform:translateY(-6px)}40%{opacity:1}100%{opacity:0;transform:translateY(6px)}}
+/* TYPEWRITER */
+.tw::after{content:'|';animation:blink .75s step-end infinite;color:var(--p)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+/* CHAIN */
+.chain{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.ch-item{background:var(--s);border:1px solid var(--b);border-radius:9px;padding:6px 16px;font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:6px}
+.ch-arrow{color:var(--p);font-size:1rem;opacity:.7}
+/* PROGRESS */
+#prog{position:fixed;top:0;left:0;height:3px;z-index:200;background:linear-gradient(90deg,var(--p),var(--c));transition:width .4s ease;box-shadow:0 0 10px var(--p)}
+/* DOTS NAV */
+#dots{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:5px;z-index:200;background:rgba(0,0,0,.5);backdrop-filter:blur(16px);border:1px solid var(--b);border-radius:50px;padding:8px 16px}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);transition:.3s;cursor:pointer}
+.dot.on{background:var(--p);box-shadow:0 0 8px var(--p);width:20px;border-radius:4px}
+.dot.sec{background:rgba(255,255,255,.08);width:4px;height:4px;cursor:default}
+/* NAV BTNS */
+#navbtns{position:fixed;bottom:18px;right:24px;display:flex;gap:8px;z-index:200}
+.nb{width:38px;height:38px;border-radius:50%;border:1px solid var(--b);background:rgba(255,255,255,.06);color:var(--tx);font-size:1rem;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
+.nb:hover{background:var(--p);border-color:var(--p);box-shadow:0 0 14px rgba(168,85,247,.5)}
+#slide-info{position:fixed;bottom:22px;left:24px;font-size:.72rem;color:var(--mu);z-index:200;background:rgba(0,0,0,.4);backdrop-filter:blur(10px);border:1px solid var(--b);border-radius:8px;padding:4px 10px}
+/* SPEAKER NOTE */
+#snote{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.9);backdrop-filter:blur(20px);border:1px solid var(--b);border-radius:12px;padding:12px 20px;max-width:680px;width:90%;font-size:.83rem;color:var(--mu);line-height:1.6;display:none;z-index:300}
+#snote strong{color:var(--y)}
+#snbtn{position:fixed;top:14px;right:14px;z-index:300;background:rgba(255,255,255,.06);border:1px solid var(--b);color:var(--mu);padding:5px 12px;border-radius:7px;font-family:'Outfit',sans-serif;font-size:.74rem;cursor:pointer;transition:.2s}
+#snbtn:hover{background:rgba(255,255,255,.12);color:var(--tx)}
+/* ANIMATIONS */
+.ao{opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease}
+.ao.in{opacity:1;transform:none}
+/* FINAL CONFETTI */
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:500;display:none}
+/* RESPONSIVE */
+@media(max-width:768px){.slide{padding:20px 16px}.g2,.g3,.cmp,.flip-grid{grid-template-columns:1fr}.chain{gap:5px}.ch-item{font-size:.8rem;padding:5px 12px}}
 </style>
 </head>
 <body>
-<div id="progress-bar"></div>
-<button id="speaker-btn" onclick="toggleNote()">💬 Notes (N)</button>
-<div id="speaker-note"></div>
-<div id="key-hint">← → Arrow keys • Click to navigate • N = Speaker Notes</div>
+<canvas id="bg"></canvas>
+<div id="prog"></div>
 <div id="deck">
 
-<!-- S1: TITLE -->
-<div class="slide active" data-note="Don't start talking. Let students read silently. Then ask: 'How many think they can build and publish a real website today?' Most hands won't go up. Say: 'By the end of this session — you will have.'">
-  <div class="section-badge badge-hook anim-up" style="--d:.1s">🎓 Student Learning Programme</div>
-  <h1 class="anim-up" style="--d:.2s">From <span class="gradient-text">Idea</span> to <span class="gradient-text-warm">Live App</span><br/>in 90 Minutes</h1>
-  <p class="anim-up" style="--d:.3s;margin-top:10px">No prior coding experience needed.</p>
-  <div class="title-chain anim-up" style="--d:.4s">
-    <div class="chain-item">🤖 Prompt Engineering</div><div class="chain-arrow">→</div>
-    <div class="chain-item">💻 Antigravity</div><div class="chain-arrow">→</div>
-    <div class="chain-item">📦 GitHub</div><div class="chain-arrow">→</div>
-    <div class="chain-item">🌐 Vercel</div>
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 1 — INTRO / TITLE
+═══════════════════════════════════════════════════════ -->
+<div class="slide active" data-note="Don't speak immediately. Let students read. Then ask: 'By a show of hands — how many of you think you can build and deploy a real website today?' Pause. Then say: 'By 9 PM you will have.'">
+  <div class="badge badge-p ao" style="transition-delay:.1s">🎓 Student Learning Programme · SLP Demo</div>
+  <h1 class="ao" style="transition-delay:.2s">From <span class="gt">Idea</span><br/>to <span class="gy">Live App</span></h1>
+  <p class="ao" style="transition-delay:.3s;margin-top:8px">in 90 minutes &mdash; no prior coding experience needed.</p>
+  <div class="chain ao" style="transition-delay:.45s">
+    <div class="ch-item">🧠 AI</div><div class="ch-arrow">→</div>
+    <div class="ch-item">🤖 Antigravity</div><div class="ch-arrow">→</div>
+    <div class="ch-item">📦 GitHub</div><div class="ch-arrow">→</div>
+    <div class="ch-item">🌐 Vercel</div><div class="ch-arrow">→</div>
+    <div class="ch-item" style="border-color:rgba(52,211,153,.4);color:var(--g)">🚀 LIVE</div>
   </div>
 </div>
 
-<!-- S2: BIG SHIFT -->
-<div class="slide" data-note="Say: 'The skill that matters now is not can you write code — it is can you communicate clearly with AI. That skill is called Prompt Engineering.'">
-  <div class="section-badge badge-hook anim-up" style="--d:.1s">❓ What Changed?</div>
-  <h2 class="anim-up" style="--d:.2s">The <span class="gradient-text">Big Shift</span></h2>
-  <div class="compare anim-up" style="--d:.3s;margin-top:16px">
-    <div class="compare-col bad">
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 2 — HOOK: THE BIG SHIFT
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Show the LIVE running ERP first — let them click around for 90 seconds. Let the wow happen before you say a word. Then pull up this slide.">
+  <div class="badge badge-y ao" style="transition-delay:.1s">⚡ The Shift</div>
+  <h2 class="ao" style="transition-delay:.2s">Something <span class="gt">Big</span> Changed</h2>
+  <div class="cmp ao" style="transition-delay:.3s;margin-top:14px">
+    <div class="cmp-col bad">
       <h4>❌ Before 2023</h4>
-      <li>Learning to code = <strong>4+ years</strong></li><li>Writing docs = painful</li>
-      <li>Googling every error for hours</li><li>Deployment = scary</li><li>Building alone, slowly</li>
+      <li>Learning to code = <strong>4+ years</strong></li>
+      <li>Googling every error for hours</li>
+      <li>Documentation = manual pain</li>
+      <li>Deployment = scary and complex</li>
+      <li>Build alone, very slowly</li>
     </div>
-    <div class="compare-col good">
-      <h4>✅ After 2023</h4>
-      <li>Describing what to build = <strong>4 minutes</strong></li><li>AI writes docs for you</li>
-      <li>AI fixes errors instantly</li><li>One click on Vercel</li><li>AI as your co-developer</li>
-    </div>
-  </div>
-</div>
-
-<!-- S3: WHAT WE BUILD -->
-<div class="slide" data-note="SHOW the live running ERP right now. Let students click around for 2 minutes. Let the wow happen before you explain anything.">
-  <div class="section-badge badge-hook anim-up" style="--d:.1s">🏗️ Today's Project</div>
-  <h2 class="anim-up" style="--d:.2s">What We <span class="gradient-text">Build Today</span></h2>
-  <div class="grid-2 anim-up" style="--d:.3s;margin-top:16px;max-width:800px">
-    <div class="card" style="text-align:center">🔐<br/><strong>Login System</strong><br/><span style="color:var(--muted);font-size:.88rem">Admin · Staff · Student roles</span></div>
-    <div class="card" style="text-align:center">👥<br/><strong>Student &amp; Staff Mgmt</strong><br/><span style="color:var(--muted);font-size:.88rem">Add · Edit · Delete</span></div>
-    <div class="card" style="text-align:center">📋<br/><strong>Attendance Tracking</strong><br/><span style="color:var(--muted);font-size:.88rem">Mark &amp; view per course</span></div>
-    <div class="card" style="text-align:center">📊<br/><strong>Grades Dashboard</strong><br/><span style="color:var(--muted);font-size:.88rem">Enter &amp; view scores</span></div>
-  </div>
-  <div class="pill-list anim-up" style="--d:.4s;margin-top:16px">
-    <div class="pill">🤖 Built by AI</div><div class="pill">📦 On GitHub</div>
-    <div class="pill">🌐 Live on Vercel</div><div class="pill">⏱️ Done in this session</div>
-  </div>
-</div>
-
-<!-- S4: WHAT IS AI -->
-<div class="slide" data-note="Use the intern analogy: Imagine hiring an intern who has read every programming book ever written. Brilliant — but they don't know YOUR project. You have to tell them clearly. That's prompt engineering.">
-  <div class="section-badge badge-ai anim-up" style="--d:.1s">🧠 Understanding AI</div>
-  <h2 class="anim-up" style="--d:.2s">AI Is Not <span class="gradient-text">Magic</span></h2>
-  <p class="anim-up" style="--d:.25s">Think of it as a very well-read intern.</p>
-  <div class="grid-3 anim-up" style="--d:.3s;margin-top:16px;max-width:840px">
-    <div class="card" style="text-align:center"><div style="font-size:1.8rem;margin-bottom:8px">📚</div><strong>Trained on</strong><br/><span style="color:var(--muted);font-size:.85rem">Billions of pages of code, books, docs</span></div>
-    <div class="card" style="text-align:center"><div style="font-size:1.8rem;margin-bottom:8px">🗣️</div><strong>It can</strong><br/><span style="color:var(--muted);font-size:.85rem">Understand your question and generate answers</span></div>
-    <div class="card" style="text-align:center"><div style="font-size:1.8rem;margin-bottom:8px">⚠️</div><strong>It cannot</strong><br/><span style="color:var(--muted);font-size:.85rem">Think on its own or know your context</span></div>
-  </div>
-  <div class="card anim-up" style="--d:.4s;margin-top:16px;border-color:rgba(168,85,247,.4);max-width:600px;text-align:center">
-    <span style="color:var(--purple);font-weight:700">🔑 Quality of YOUR input = Quality of its output</span>
-  </div>
-</div>
-
-<!-- S5: AI TOOL MAP -->
-<div class="slide" data-note="Point to Antigravity and say: This is what we use today. It lives inside your code editor and acts as a senior developer who works at the speed of thought.">
-  <div class="section-badge badge-ai anim-up" style="--d:.1s">🗺️ The AI Landscape</div>
-  <h2 class="anim-up" style="--d:.2s">Types of <span class="gradient-text">AI Tools</span></h2>
-  <div class="grid-2 anim-up" style="--d:.3s;margin-top:16px;max-width:820px">
-    <div class="card">💬 <strong>Chat AI</strong><br/><span style="color:var(--muted);font-size:.88rem">ChatGPT, Gemini<br/>Questions · Writing · Research</span></div>
-    <div class="card">🎨 <strong>Image AI</strong><br/><span style="color:var(--muted);font-size:.88rem">Midjourney, DALL-E<br/>Design · Visuals · Logos</span></div>
-    <div class="card" style="border-color:rgba(168,85,247,.5);background:rgba(168,85,247,.08)">💻 <strong style="color:var(--purple)">Coding AI ← TODAY</strong><br/><span style="color:var(--muted);font-size:.88rem">Antigravity (Google DeepMind)<br/>Build real software with AI</span></div>
-    <div class="card">🎵 <strong>Audio AI</strong><br/><span style="color:var(--muted);font-size:.88rem">Suno, ElevenLabs<br/>Music · Voice · Audio</span></div>
-  </div>
-</div>
-
-<!-- S6: ACTIVITY 1 -->
-<div class="slide" data-note="TYPE all 3 prompts into Antigravity live. Show the outputs. This is the most memorable moment. Let students react before you explain.">
-  <div class="section-badge badge-activity anim-up" style="--d:.1s">🎯 Activity #1</div>
-  <h2 class="anim-up" style="--d:.2s">Good Prompt vs <span class="gradient-text-warm">Bad Prompt</span></h2>
-  <div class="compare anim-up" style="--d:.3s;margin-top:14px">
-    <div class="compare-col bad">
-      <h4>❌ Vague</h4>
-      <li>"Make a website"</li><li>"Make a login page"</li>
-    </div>
-    <div class="compare-col good">
-      <h4>✅ Specific</h4>
-      <li style="font-size:.85rem">"Build a login page for a college ERP. Username + password fields, submit button, error message on fail. Dark theme with purple accents."</li>
+    <div class="cmp-col good">
+      <h4>✅ 2024 and Beyond</h4>
+      <li>Describing what to build = <strong>4 minutes</strong></li>
+      <li>AI fixes errors in seconds</li>
+      <li>AI writes docs for you</li>
+      <li>One click on Vercel → live</li>
+      <li>AI is your co-developer, 24/7</li>
     </div>
   </div>
-  <div class="card anim-up" style="--d:.4s;margin-top:14px;border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.06);max-width:600px;text-align:center">
-    <strong style="color:var(--yellow)">🔴 LIVE DEMO — Type all 3 into Antigravity right now</strong>
+  <div class="card c-p ao" style="transition-delay:.42s;margin-top:14px;text-align:center;max-width:620px">
+    <span style="color:var(--p);font-weight:700">"The skill that matters now is not <em>can you code</em> —<br/>it's <em>can you clearly communicate with AI.</em>"</span>
   </div>
 </div>
 
-<!-- S7: 5-PART FORMULA -->
-<div class="slide" data-note="Write on the whiteboard: Role + Context + Task + Format + Constraints = Great Output. Leave it visible the whole session.">
-  <div class="section-badge badge-prompt anim-up" style="--d:.1s">📝 Prompt Engineering</div>
-  <h2 class="anim-up" style="--d:.2s">The <span class="gradient-text">5-Part Formula</span></h2>
-  <ul class="checklist anim-up" style="--d:.3s;margin-top:14px">
-    <li><span class="icon">🎭</span><div><strong>ROLE</strong><span class="desc">"You are a Python Flask developer..."</span></div></li>
-    <li><span class="icon">📋</span><div><strong>CONTEXT</strong><span class="desc">"Building a college ERP with JSON data files..."</span></div></li>
-    <li><span class="icon">🎯</span><div><strong>TASK</strong><span class="desc">"Create a student attendance tracking page..."</span></div></li>
-    <li><span class="icon">📐</span><div><strong>FORMAT</strong><span class="desc">"Use HTML + plain CSS, no external libraries..."</span></div></li>
-    <li><span class="icon">⚠️</span><div><strong>CONSTRAINTS</strong><span class="desc">"Keep it minimal and beginner-friendly..."</span></div></li>
-  </ul>
-  <div class="card anim-up" style="--d:.42s;margin-top:14px;border-color:rgba(168,85,247,.4);text-align:center;max-width:620px">
-    <code style="font-family:'Fira Code',monospace;font-size:.88rem;color:var(--purple)">Role + Context + Task + Format + Constraints = 🔥</code>
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 3 — SECTION BREAK: PART 1 — FOUNDATION
+═══════════════════════════════════════════════════════ -->
+<div class="slide sec-break s1" data-note="This is just a transition. Say: 'Before we build, let us understand the world we are stepping into.'">
+  <div class="sec-num">01</div>
+  <div class="badge badge-c ao" style="transition-delay:.1s">Part 1 of 3</div>
+  <div class="sec-title ao gt" style="transition-delay:.2s">Understanding AI</div>
+  <p class="sec-sub ao" style="transition-delay:.3s">What is AI, how it works, what types exist, and the tools professionals use every day.</p>
+  <div class="sec-chips ao" style="transition-delay:.4s">
+    <div class="sec-chip" style="color:var(--c);border-color:rgba(34,211,238,.3)">What is AI</div>
+    <div class="sec-chip" style="color:var(--c);border-color:rgba(34,211,238,.3)">Types of AI</div>
+    <div class="sec-chip" style="color:var(--c);border-color:rgba(34,211,238,.3)">LLMs &amp; Tools</div>
   </div>
 </div>
 
-<!-- S8: BAD VS GOOD -->
-<div class="slide" data-note="Walk through each row. Ask students: what makes the right side better?">
-  <div class="section-badge badge-prompt anim-up" style="--d:.1s">📝 Prompt Engineering</div>
-  <h2 class="anim-up" style="--d:.2s">Bad vs <span class="gradient-text">Good</span> — Side by Side</h2>
-  <div class="compare anim-up" style="--d:.3s;margin-top:14px">
-    <div class="compare-col bad">
-      <h4>❌ Too vague</h4>
-      <li>"Create a form"</li><li>"Fix my code"</li><li>"Make it better"</li>
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 4 — WHAT IS AI?
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Use the intern analogy slowly and clearly. Pause after 'they don't know YOUR project' — that's the key tension. Prompt engineering is how you brief the intern.">
+  <div class="badge badge-c ao" style="transition-delay:.1s">🧠 Foundations</div>
+  <h2 class="ao" style="transition-delay:.2s">What is <span class="gt">AI?</span></h2>
+  <p class="ao" style="transition-delay:.25s">Think of it as a very well-read intern.</p>
+  <div class="g3 ao" style="transition-delay:.3s;margin-top:16px;max-width:840px">
+    <div class="card" style="text-align:center">
+      <div style="font-size:1.9rem;margin-bottom:8px">📚</div>
+      <strong>Trained on</strong>
+      <p style="font-size:.84rem;margin-top:5px">Billions of pages — code, books, docs, every Stack Overflow answer ever written</p>
     </div>
-    <div class="compare-col good">
-      <h4>✅ Specific &amp; clear</h4>
-      <li style="font-size:.84rem">"Create HTML attendance form with checkboxes, date picker, submit. Dark theme."</li>
-      <li style="font-size:.84rem">"Flask /admin/students returns 404 on POST. Here's my code: [paste]. Fix it?"</li>
-      <li style="font-size:.84rem">"Add hover animations, gradient backgrounds, glass card effect."</li>
+    <div class="card" style="text-align:center">
+      <div style="font-size:1.9rem;margin-bottom:8px">🗣️</div>
+      <strong>It can</strong>
+      <p style="font-size:.84rem;margin-top:5px">Understand your question, generate answers, write code, fix bugs, explain concepts</p>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:1.9rem;margin-bottom:8px">⚠️</div>
+      <strong>It cannot</strong>
+      <p style="font-size:.84rem;margin-top:5px">Think on its own or know your context without you telling it — it needs YOUR guidance</p>
+    </div>
+  </div>
+  <div class="card c-p ao" style="transition-delay:.42s;margin-top:14px;text-align:center;max-width:560px">
+    <span style="color:var(--p);font-weight:700">🔑 Quality of YOUR input = Quality of its output</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 5 — TYPES OF AI
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Ask: 'Which of these have you used before?' Let students share experiences. This makes the topic feel real and relatable.">
+  <div class="badge badge-c ao" style="transition-delay:.1s">🗂️ AI Landscape</div>
+  <h2 class="ao" style="transition-delay:.2s">Types of <span class="gt">AI Tools</span></h2>
+  <div class="g2 ao" style="transition-delay:.3s;margin-top:16px;max-width:840px">
+    <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+      <span style="font-size:2rem">💬</span>
+      <div><strong>Chat AI</strong><br/><span style="color:var(--mu);font-size:.86rem">ChatGPT, Claude, Gemini<br/>Questions · Writing · Research · Summaries</span></div>
+    </div>
+    <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+      <span style="font-size:2rem">🎨</span>
+      <div><strong>Image AI</strong><br/><span style="color:var(--mu);font-size:.86rem">Midjourney, DALL-E, Stable Diffusion<br/>Design · Art · Logos · UI mockups</span></div>
+    </div>
+    <div class="card c-p" style="display:flex;gap:14px;align-items:flex-start">
+      <span style="font-size:2rem">💻</span>
+      <div><strong style="color:var(--p)">Code AI ← We use this today</strong><br/><span style="color:var(--mu);font-size:.86rem">Antigravity, GitHub Copilot<br/>Build · Debug · Improve · Deploy software</span></div>
+    </div>
+    <div class="card" style="display:flex;gap:14px;align-items:flex-start">
+      <span style="font-size:2rem">🎵</span>
+      <div><strong>Audio &amp; Video AI</strong><br/><span style="color:var(--mu);font-size:.86rem">Suno, ElevenLabs, RunwayML<br/>Music · Voiceovers · Video generation</span></div>
     </div>
   </div>
 </div>
 
-<!-- S9: 3 PATTERNS -->
-<div class="slide" data-note="PRINT THIS SLIDE as a handout. Students will use these patterns long after today.">
-  <div class="section-badge badge-prompt anim-up" style="--d:.1s">📝 Prompt Engineering</div>
-  <h2 class="anim-up" style="--d:.2s">3 Patterns That <span class="gradient-text">Always Work</span></h2>
-  <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:760px;margin-top:14px" class="anim-up" style="--d:.3s">
-    <div class="code-block"><span class="kw">BUILDER:</span>  "Build <span class="hl">[feature]</span> for <span class="hl">[project]</span>. It should <span class="hl">[requirements]</span>. Use <span class="hl">[tech]</span>."</div>
-    <div class="code-block"><span class="kw">FIXER:</span>    "Getting <span class="hl">[error]</span> when I <span class="hl">[action]</span>. Code: <span class="hl">[paste]</span>. What's wrong? Fix it."</div>
-    <div class="code-block"><span class="kw">IMPROVER:</span> "Current <span class="hl">[thing]</span>. Want it to <span class="hl">[better how]</span>. Keep <span class="hl">[X]</span> the same."</div>
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 6 — AI TOOLS & LLMs
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Let students click the cards. Say: 'All of these are LLMs — Large Language Models. They all run on PROMPTS. Whoever writes the best prompt gets the best output. That is the skill we are teaching today.'">
+  <div class="badge badge-c ao" style="transition-delay:.05s">🤖 LLMs &amp; Tools</div>
+  <h2 class="ao" style="transition-delay:.12s">The AI Tools <span class="gt">Professionals Use</span></h2>
+  <p class="flip-hint ao" style="transition-delay:.18s">👆 Click any card to learn more</p>
+  <div class="flip-grid ao" style="transition-delay:.25s;margin-top:10px">
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-front"><div class="ico">🟢</div><div class="nm">ChatGPT</div><div class="co">OpenAI</div></div>
+        <div class="flip-back"><div class="fb-title">ChatGPT — OpenAI</div><div class="fb-item">✅ Best for: general questions, writing, code help</div><div class="fb-item">🌐 Most popular AI in the world</div><div class="fb-item">💡 Prompt tip: Be specific about role &amp; format</div><div class="fb-item">💰 Free + Paid tiers</div></div>
+      </div>
+    </div>
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-front"><div class="ico">🟣</div><div class="nm">Claude</div><div class="co">Anthropic</div></div>
+        <div class="flip-back"><div class="fb-title">Claude — Anthropic</div><div class="fb-item">✅ Best for: long documents, analysis, coding</div><div class="fb-item">📄 200K token context window</div><div class="fb-item">💡 Prompt tip: Give it large files to analyse</div><div class="fb-item">💰 Free + Paid tiers</div></div>
+      </div>
+    </div>
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-front"><div class="ico">🔵</div><div class="nm">Gemini</div><div class="co">Google DeepMind</div></div>
+        <div class="flip-back"><div class="fb-title">Gemini — Google</div><div class="fb-item">✅ Best for: multimodal tasks, search + AI</div><div class="fb-item">🔗 Integrates with Google Workspace</div><div class="fb-item">💡 Prompt tip: Use images + text together</div><div class="fb-item">💰 Free tier very generous</div></div>
+      </div>
+    </div>
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-front"><div class="ico">🦙</div><div class="nm">Llama</div><div class="co">Meta (Open Source)</div></div>
+        <div class="flip-back"><div class="fb-title">Llama — Meta AI</div><div class="fb-item">✅ Best for: running AI locally, no internet</div><div class="fb-item">🔓 Fully open source &amp; free</div><div class="fb-item">💡 Prompt tip: Same as ChatGPT style</div><div class="fb-item">💰 100% Free</div></div>
+      </div>
+    </div>
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-front"><div class="ico">🌬️</div><div class="nm">Mistral</div><div class="co">Mistral AI</div></div>
+        <div class="flip-back"><div class="fb-title">Mistral — French Startup</div><div class="fb-item">✅ Best for: fast, efficient, European privacy</div><div class="fb-item">⚡ Very fast response times</div><div class="fb-item">💡 Prompt tip: Great for code generation</div><div class="fb-item">💰 Free + API</div></div>
+      </div>
+    </div>
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-inner">
+        <div class="flip-front"><div class="ico">🔍</div><div class="nm">Perplexity</div><div class="co">Perplexity AI</div></div>
+        <div class="flip-back"><div class="fb-title">Perplexity AI</div><div class="fb-item">✅ Best for: real-time research with sources</div><div class="fb-item">📰 Cites every answer with URLs</div><div class="fb-item">💡 Prompt tip: Ask it for recent events</div><div class="fb-item">💰 Free + Paid tiers</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card c-p ao" style="transition-delay:.4s;margin-top:12px;text-align:center;max-width:600px">
+    <span style="color:var(--p);font-weight:700">All of these respond to <em>PROMPTS</em> — whoever writes better prompts gets better results.</span>
   </div>
 </div>
 
-<!-- S10: ACTIVITY 2 -->
-<div class="slide" data-note="Walk around and read their prompts. Pick 2-3 and type them live. Students whose prompts are used will remember this forever.">
-  <div class="section-badge badge-activity anim-up" style="--d:.1s">🎯 Activity #2</div>
-  <h2 class="anim-up" style="--d:.2s">Pair <span class="gradient-text-warm">Prompt Challenge</span></h2>
-  <div class="activity-box anim-up" style="--d:.3s;margin-top:14px">
-    <h3>⏱️ 5 minutes — Work in pairs</h3>
-    <div class="activity-step"><div class="step-num">1</div><div class="step-text">Write a prompt for a <strong>"Student Dashboard"</strong> page</div></div>
-    <div class="activity-step"><div class="step-num">2</div><div class="step-text">Check your partner's prompt using the 5-part formula</div></div>
-    <div class="activity-step"><div class="step-num">3</div><div class="step-text">Improve it together</div></div>
-    <div class="activity-step"><div class="step-num">4</div><div class="step-text">Best prompt gets typed into Antigravity LIVE 🏆</div></div>
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 7 — SECTION BREAK: PART 2 — OUR TOOLS
+═══════════════════════════════════════════════════════ -->
+<div class="slide sec-break s2" data-note="Say: 'Now you know what AI is and the landscape. Let me show you the exact 3 tools we will use in this session.'">
+  <div class="sec-num">02</div>
+  <div class="badge badge-p ao" style="transition-delay:.1s">Part 2 of 3</div>
+  <div class="sec-title ao" style="transition-delay:.2s;background:linear-gradient(120deg,var(--p),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Our Weapons</div>
+  <p class="sec-sub ao" style="transition-delay:.3s">Three free tools that turn your ideas into live products. Know them before you use them.</p>
+  <div class="sec-chips ao" style="transition-delay:.4s">
+    <div class="sec-chip" style="color:var(--pk);border-color:rgba(244,114,182,.3)">💻 Antigravity</div>
+    <div class="sec-chip" style="color:var(--g);border-color:rgba(52,211,153,.3)">📦 GitHub</div>
+    <div class="sec-chip" style="color:var(--c);border-color:rgba(34,211,238,.3)">🌐 Vercel</div>
   </div>
 </div>
 
-<!-- S11: UNIVERSAL SKILL -->
-<div class="slide" data-note="Let students call out professions not on the list. Show it applies everywhere.">
-  <div class="section-badge badge-prompt anim-up" style="--d:.1s">💡 Why It Matters</div>
-  <h2 class="anim-up" style="--d:.2s">A <span class="gradient-text">Universal Skill</span></h2>
-  <div class="grid-3 anim-up" style="--d:.3s;margin-top:14px;max-width:840px">
-    <div class="card" style="text-align:center">👨‍💼<br/><strong>Product Managers</strong><br/><span style="color:var(--muted);font-size:.84rem">Write specs for AI to build</span></div>
-    <div class="card" style="text-align:center">👩‍🎨<br/><strong>Designers</strong><br/><span style="color:var(--muted);font-size:.84rem">Generate UI ideas with AI</span></div>
-    <div class="card" style="text-align:center">👨‍💻<br/><strong>Developers</strong><br/><span style="color:var(--muted);font-size:.84rem">Build 10× faster</span></div>
-    <div class="card" style="text-align:center">📊<br/><strong>Data Analysts</strong><br/><span style="color:var(--muted);font-size:.84rem">Query data in plain English</span></div>
-    <div class="card" style="text-align:center">🎓<br/><strong>Students</strong><br/><span style="color:var(--muted);font-size:.84rem">Research · Write · Build</span></div>
-    <div class="card" style="text-align:center">🧑‍🏫<br/><strong>Teachers</strong><br/><span style="color:var(--muted);font-size:.84rem">Lesson plans · Quizzes</span></div>
-  </div>
-  <div class="card anim-up" style="--d:.4s;margin-top:14px;border-color:rgba(168,85,247,.4);text-align:center;max-width:600px">
-    <span style="color:var(--purple);font-weight:700">"Prompt Engineering is the new computer literacy."</span>
-  </div>
-</div>
-
-<!-- S12: WHAT IS ANTIGRAVITY -->
-<div class="slide" data-note="Emphasise: It's not just autocomplete. It reads your ENTIRE project and understands context. That's what makes it different.">
-  <div class="section-badge badge-agy anim-up" style="--d:.1s">🚀 Antigravity</div>
-  <h2 class="anim-up" style="--d:.2s">What is <span class="gradient-text">Antigravity?</span></h2>
-  <p class="anim-up" style="--d:.25s">An AI coding assistant by Google DeepMind, inside your editor.</p>
-  <ul class="checklist anim-up" style="--d:.3s;margin-top:14px">
-    <li><span class="icon">✅</span><div>Reads and understands your <strong>entire project</strong></div></li>
-    <li><span class="icon">✅</span><div>Writes code from <strong>plain English instructions</strong></div></li>
-    <li><span class="icon">✅</span><div>Fixes bugs you describe in <strong>words</strong></div></li>
-    <li><span class="icon">✅</span><div>Improves UI, adds features, writes documentation</div></li>
-    <li><span class="icon">✅</span><div>Runs commands, installs packages, manages files</div></li>
-  </ul>
-  <div class="card anim-up" style="--d:.42s;margin-top:14px;border-color:rgba(244,114,182,.4);text-align:center;max-width:540px">
-    <span style="color:var(--pink);font-weight:700">Not just autocomplete — it's a co-developer.</span>
-  </div>
-</div>
-
-<!-- S13: OLD WAY VS ANTIGRAVITY -->
-<div class="slide" data-note="The 2 hours vs 5 minutes contrast is the most relatable for students. Pause there.">
-  <div class="section-badge badge-agy anim-up" style="--d:.1s">🚀 Antigravity</div>
-  <h2 class="anim-up" style="--d:.2s">Old Way vs <span class="gradient-text">With Antigravity</span></h2>
-  <div class="compare anim-up" style="--d:.3s;margin-top:14px">
-    <div class="compare-col bad">
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 8 — ANTIGRAVITY
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Emphasise: 'It is not autocomplete. It reads your entire project and understands context. You describe — it builds.' Contrast with ChatGPT which doesn't know your files.">
+  <div class="badge badge-pk ao" style="transition-delay:.1s">🚀 Tool #1</div>
+  <h2 class="ao" style="transition-delay:.2s">Meet <span class="gt">Antigravity</span></h2>
+  <p class="ao" style="transition-delay:.25s">An AI coding assistant by Google DeepMind — lives inside your editor.</p>
+  <div class="cmp ao" style="transition-delay:.32s;margin-top:14px">
+    <div class="cmp-col bad">
       <h4>❌ Old Way</h4>
-      <li>Google the problem</li><li>Read 5 Stack Overflow posts</li>
-      <li>Copy, paste, edit, debug</li><li>Break something else</li>
-      <li style="color:var(--yellow)"><strong>2 hours later: maybe working</strong></li>
+      <li>Google the problem</li>
+      <li>Read 5 Stack Overflow posts</li>
+      <li>Copy, paste, edit, debug</li>
+      <li>Break something else</li>
+      <li style="color:var(--y)"><strong>2 hours → maybe working</strong></li>
     </div>
-    <div class="compare-col good">
+    <div class="cmp-col good">
       <h4>✅ With Antigravity</h4>
-      <li>Describe the problem</li><li>Get working code in 10 seconds</li>
-      <li>Code already fits YOUR project</li><li>Ask AI to fix that too</li>
-      <li style="color:var(--green)"><strong>5 minutes: done ✅</strong></li>
+      <li>Describe the problem in plain English</li>
+      <li>Get working code in 10 seconds</li>
+      <li>Code fits perfectly — it read your files</li>
+      <li>Ask it to fix anything it broke</li>
+      <li style="color:var(--g)"><strong>5 minutes → done ✅</strong></li>
+    </div>
+  </div>
+  <div class="pills ao" style="transition-delay:.42s;margin-top:14px">
+    <div class="pill">✅ Reads entire project</div>
+    <div class="pill">✅ Writes from plain English</div>
+    <div class="pill">✅ Fixes bugs instantly</div>
+    <div class="pill">✅ Runs commands for you</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 9 — GITHUB
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="The Google Drive analogy always clicks instantly. Then add: 'But Google Drive doesn't track every single change you ever made. Git does. Every line, every edit, timestamped forever.'">
+  <div class="badge badge-g ao" style="transition-delay:.1s">📦 Tool #2</div>
+  <h2 class="ao" style="transition-delay:.2s">Meet <span class="gg">GitHub</span></h2>
+  <div class="card c-g ao" style="transition-delay:.25s;margin-bottom:14px;text-align:center;max-width:480px"><span style="color:var(--g);font-weight:700;font-size:1rem">GitHub = Google Drive — but for CODE</span></div>
+  <div class="g2 ao" style="transition-delay:.3s;max-width:860px">
+    <ul class="chk" style="max-width:100%">
+      <li><span class="ic">✅</span><div>Stores code safely in the cloud<span class="sub">Never lose your work again</span></div></li>
+      <li><span class="ic">✅</span><div>Tracks <strong>every change ever made</strong><span class="sub">Full history, timestamped forever</span></div></li>
+      <li><span class="ic">✅</span><div>Lets teams collaborate<span class="sub">Used by Microsoft, Google, NASA, Netflix</span></div></li>
+    </ul>
+    <div>
+      <div class="code" style="margin-bottom:10px">
+        <div><span class="kw">git init</span>     <span class="cm"># start tracking</span></div>
+        <div><span class="kw">git add .</span>    <span class="cm"># stage changes</span></div>
+        <div><span class="kw">git commit</span>   <span class="cm"># save snapshot</span></div>
+        <div><span class="kw">git push</span>     <span class="cm"># upload to GitHub</span></div>
+      </div>
+      <div class="card" style="border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.06);text-align:center;padding:10px">
+        <span style="color:var(--r);font-weight:700;font-size:.88rem">⚠️ NEVER push API keys or .env files</span>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- S14: LIVE DEMO -->
-<div class="slide" data-note="Do this slowly. Narrate as Antigravity types. 'See how it reads the existing template first? Now it adds exactly where needed — it understands the full context.'">
-  <div class="section-badge badge-agy anim-up" style="--d:.1s">🔴 Live Demo</div>
-  <h2 class="anim-up" style="--d:.2s"><span class="gradient-text-warm">Antigravity</span> in Action</h2>
-  <div class="activity-box anim-up" style="--d:.3s;margin-top:14px;border-color:rgba(244,114,182,.3);background:rgba(244,114,182,.05)">
-    <h3 style="color:var(--pink)">🔴 Watch Closely</h3>
-    <div class="activity-step"><div class="step-num" style="background:var(--pink)">1</div><div class="step-text">Open the ERP project — show all files</div></div>
-    <div class="activity-step"><div class="step-num" style="background:var(--pink)">2</div><div class="step-text">Type: <em style="color:var(--cyan)">"Add a counter at top of attendance showing total present and absent today"</em></div></div>
-    <div class="activity-step"><div class="step-num" style="background:var(--pink)">3</div><div class="step-text">Watch AI write code — it reads existing files automatically</div></div>
-    <div class="activity-step"><div class="step-num" style="background:var(--pink)">4</div><div class="step-text">Refresh browser → feature is live ✅</div></div>
-  </div>
-</div>
-
-<!-- S15: WHAT ELSE -->
-<div class="slide" data-note="Ask students to add more to this list. They'll think of creative use cases.">
-  <div class="section-badge badge-agy anim-up" style="--d:.1s">🚀 Antigravity</div>
-  <h2 class="anim-up" style="--d:.2s">What Else Can You <span class="gradient-text">Ask?</span></h2>
-  <ul class="checklist anim-up" style="--d:.3s;margin-top:14px">
-    <li><span class="icon">💡</span><div>"Explain what this function does"<span class="desc">→ Understanding code</span></div></li>
-    <li><span class="icon">🐛</span><div>"Why is this giving a 500 error?"<span class="desc">→ Debugging</span></div></li>
-    <li><span class="icon">🎨</span><div>"Make this page look more modern"<span class="desc">→ UI improvement</span></div></li>
-    <li><span class="icon">➕</span><div>"Add search to the student list"<span class="desc">→ Feature addition</span></div></li>
-    <li><span class="icon">📄</span><div>"Write a README for this project"<span class="desc">→ Documentation</span></div></li>
-  </ul>
-  <div class="card anim-up" style="--d:.42s;margin-top:12px;border-color:rgba(244,114,182,.4);text-align:center;max-width:580px">
-    <span style="color:var(--pink);font-weight:700">If you can describe it in English, Antigravity can build it.</span>
-  </div>
-</div>
-
-<!-- S16: ACTIVITY 3 -->
-<div class="slide" data-note="Most energetic part. Let students compete to suggest features. Build the ones that get the most enthusiasm.">
-  <div class="section-badge badge-activity anim-up" style="--d:.1s">🎯 Activity #3</div>
-  <h2 class="anim-up" style="--d:.2s">Students <span class="gradient-text-warm">Call Features</span></h2>
-  <div class="activity-box anim-up" style="--d:.3s;margin-top:14px">
-    <h3>🎤 Open Round — Shout out a feature!</h3>
-    <div class="activity-step"><div class="step-num">→</div><div class="step-text">"Add a search bar for students"</div></div>
-    <div class="activity-step"><div class="step-num">→</div><div class="step-text">"Show total student count on dashboard"</div></div>
-    <div class="activity-step"><div class="step-num">→</div><div class="step-text">"Add a logout confirmation popup"</div></div>
-    <div class="activity-step"><div class="step-num">→</div><div class="step-text"><em>Your idea here...</em></div></div>
-  </div>
-  <div class="card anim-up" style="--d:.4s;margin-top:12px;border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.05);text-align:center;max-width:560px">
-    <strong style="color:var(--yellow)">The PROMPT is the skill — not programming knowledge.</strong>
-  </div>
-</div>
-
-<!-- S17: PRO TIPS -->
-<div class="slide" data-note="Tips 6 and 7 are most important for students — use AI to learn, not just get answers.">
-  <div class="section-badge badge-agy anim-up" style="--d:.1s">💡 Pro Tips</div>
-  <h2 class="anim-up" style="--d:.2s">7 Rules for <span class="gradient-text">Better AI Results</span></h2>
-  <div class="grid-2 anim-up" style="--d:.3s;margin-top:14px;max-width:860px">
-    <div class="card"><strong>1. Be Specific</strong><br/><span style="color:var(--muted);font-size:.86rem">Vague prompt = vague result</span></div>
-    <div class="card"><strong>2. One Thing at a Time</strong><br/><span style="color:var(--muted);font-size:.86rem">Don't ask for 10 features at once</span></div>
-    <div class="card"><strong>3. Give Context</strong><br/><span style="color:var(--muted);font-size:.86rem">Mention the file, goal, tech stack</span></div>
-    <div class="card"><strong>4. Review Output</strong><br/><span style="color:var(--muted);font-size:.86rem">AI can make mistakes — always check</span></div>
-    <div class="card"><strong>5. Iterate</strong><br/><span style="color:var(--muted);font-size:.86rem">Refine prompts if first result isn't perfect</span></div>
-    <div class="card"><strong>6. Use It to Learn</strong><br/><span style="color:var(--muted);font-size:.86rem">"Explain this code" is always valid</span></div>
-  </div>
-</div>
-
-<!-- S18: WHAT IS GITHUB -->
-<div class="slide" data-note="The Google Drive analogy always clicks. Then follow up: But Google Drive doesn't track every version of every file ever. Git does.">
-  <div class="section-badge badge-github anim-up" style="--d:.1s">📦 GitHub</div>
-  <h2 class="anim-up" style="--d:.2s">What is <span class="gradient-text">GitHub?</span></h2>
-  <div class="card anim-up" style="--d:.25s;margin-bottom:14px;border-color:rgba(52,211,153,.3);text-align:center;max-width:520px">
-    <span style="color:var(--green);font-weight:700;font-size:1rem">GitHub = Google Drive — but for CODE</span>
-  </div>
-  <ul class="checklist anim-up" style="--d:.3s">
-    <li><span class="icon">✅</span><div>Stores code safely in the cloud</div></li>
-    <li><span class="icon">✅</span><div>Tracks <strong>every change ever made</strong> — full history</div></li>
-    <li><span class="icon">✅</span><div>Lets teams collaborate on the same project</div></li>
-    <li><span class="icon">✅</span><div>Shows your work to employers &amp; the world</div></li>
-    <li><span class="icon">✅</span><div>Triggers automatic deployments (Vercel uses this)</div></li>
-  </ul>
-  <p class="anim-up" style="--d:.4s;margin-top:12px;font-size:.88rem">Used by: Microsoft · Google · NASA · Netflix · and now <strong style="color:var(--green)">YOU</strong></p>
-</div>
-
-<!-- S19: 4 GIT COMMANDS -->
-<div class="slide" data-note="Say: These 4 commands handle 90% of daily git work. You only need to memorise these 4.">
-  <div class="section-badge badge-github anim-up" style="--d:.1s">📦 GitHub</div>
-  <h2 class="anim-up" style="--d:.2s">4 Commands. <span class="gradient-text">That's All.</span></h2>
-  <div class="code-block anim-up" style="--d:.3s;margin-top:14px">
-    <div style="margin-bottom:14px"><span class="kw">git init</span><span class="cm">          # Start tracking a project (run once)</span></div>
-    <div style="margin-bottom:14px"><span class="kw">git add .</span><span class="cm">         # Stage all changed files</span></div>
-    <div style="margin-bottom:14px"><span class="kw">git commit -m <span class="str">"message"</span></span><span class="cm">  # Save a snapshot with a label</span></div>
-    <div><span class="kw">git push</span><span class="cm">          # Upload to GitHub</span></div>
-  </div>
-  <div class="card anim-up" style="--d:.4s;margin-top:14px;border-color:rgba(52,211,153,.4);text-align:center;max-width:520px">
-    <span style="color:var(--green);font-weight:700">These 4 commands handle 90% of daily git work.</span>
-  </div>
-</div>
-
-<!-- S20: GOLDEN RULE -->
-<div class="slide" data-note="Reference the push error from earlier. 'This happened to us today. GitHub protected the project. Now you know exactly what .gitignore is for — and you will never forget it.'">
-  <div class="section-badge badge-github anim-up" style="--d:.1s">⚠️ Critical Rule</div>
-  <h2 class="anim-up" style="--d:.2s">The <span class="gradient-text-warm">Golden Rule</span></h2>
-  <div class="card anim-up" style="--d:.25s;border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);max-width:660px;text-align:center;margin-bottom:14px">
-    <span style="color:#ef4444;font-weight:800;font-size:1.05rem">NEVER push secret files to GitHub.</span>
-  </div>
-  <div class="compare anim-up" style="--d:.3s">
-    <div class="compare-col bad">
-      <h4>❌ Never commit</h4>
-      <li>API keys (Gemini, OpenAI...)</li><li>Passwords</li>
-      <li>Database credentials</li><li>.env files</li>
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 10 — VERCEL
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Let the pipeline animation play. Then say: 'Every single time you push to GitHub, this happens automatically. No servers. No FTP. No manual steps. Code → Push → Live.'">
+  <div class="badge badge-c ao" style="transition-delay:.1s">🌐 Tool #3</div>
+  <h2 class="ao" style="transition-delay:.2s">Meet <span class="gt">Vercel</span></h2>
+  <p class="ao" style="transition-delay:.25s">GitHub stores your code. Vercel puts it on the internet. Automatically.</p>
+  <div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;justify-content:center;margin-top:16px;width:100%;max-width:880px">
+    <div class="pipe-wrap ao" style="transition-delay:.32s" id="pipeline">
+      <div class="pipe-node">💻 You write code locally</div>
+      <div class="pipe-dot" id="pd1"></div>
+      <div class="pipe-node">📦 <code>git push</code> to GitHub</div>
+      <div class="pipe-dot" id="pd2"></div>
+      <div class="pipe-node">🔍 Vercel detects the push</div>
+      <div class="pipe-dot" id="pd3"></div>
+      <div class="pipe-node">⚙️ Vercel builds your project</div>
+      <div class="pipe-dot" id="pd4"></div>
+      <div class="pipe-node active-pipe">🌐 Your URL is live in ~60 seconds</div>
     </div>
-    <div class="compare-col good">
-      <h4>✅ How to protect</h4>
-      <li><code>.gitignore</code> — git ignores listed files</li>
-      <li><code>.env.example</code> — safe template only</li>
-      <li>GitHub SCANS every push for secrets</li>
-      <li>It BLOCKS the push to protect you</li>
+    <div class="ao" style="transition-delay:.4s;flex:1;min-width:240px">
+      <ul class="chk" style="max-width:100%">
+        <li><span class="ic">✅</span><div>Reads from GitHub automatically</div></li>
+        <li><span class="ic">✅</span><div>Builds &amp; deploys in 60 seconds</div></li>
+        <li><span class="ic">✅</span><div>Free public URL instantly</div></li>
+        <li><span class="ic">✅</span><div>Auto-redeploys on every push</div></li>
+        <li><span class="ic">✅</span><div>Free tier — more than enough for students</div></li>
+      </ul>
+      <div class="code" style="margin-top:10px;text-align:center">Your URL: <span class="str">your-project.vercel.app</span></div>
     </div>
   </div>
 </div>
 
-<!-- S21: LIVE PUSH -->
-<div class="slide" data-note="Go slowly. Point out that .env is NOT visible in the files list on GitHub after pushing.">
-  <div class="section-badge badge-github anim-up" style="--d:.1s">🔴 Live Demo</div>
-  <h2 class="anim-up" style="--d:.2s">Pushing to <span class="gradient-text">GitHub</span></h2>
-  <div class="activity-box anim-up" style="--d:.3s;margin-top:14px;border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.05)">
-    <h3 style="color:var(--green)">🔴 Watch</h3>
-    <div class="activity-step"><div class="step-num" style="background:var(--green)">1</div><div class="step-text">Create a new repo on github.com</div></div>
-    <div class="activity-step"><div class="step-num" style="background:var(--green)">2</div><div class="step-text">Add .gitignore to protect .env secrets</div></div>
-    <div class="activity-step"><div class="step-num" style="background:var(--green)">3</div><div class="step-text"><code style="color:var(--cyan)">git add .  →  git commit  →  git push</code></div></div>
-    <div class="activity-step"><div class="step-num" style="background:var(--green)">4</div><div class="step-text">Open github.com → See all files. .env is NOT there ✅</div></div>
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 11 — SECTION BREAK: PART 3 — BUILD PHASE
+═══════════════════════════════════════════════════════ -->
+<div class="slide sec-break s3" data-note="Say with energy: 'Enough theory. Let us build something real. Right now. Live. Together.' Then pause for effect before advancing.">
+  <div class="sec-num">03</div>
+  <div class="badge badge-y ao" style="transition-delay:.1s">Part 3 of 3</div>
+  <div class="sec-title ao" style="transition-delay:.2s;background:linear-gradient(120deg,var(--y),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Let's Build It</div>
+  <p class="sec-sub ao" style="transition-delay:.3s">Stop learning. Start building. Prompt engineering → Antigravity → GitHub → Vercel → Live in this room, right now.</p>
+  <div class="sec-chips ao" style="transition-delay:.4s">
+    <div class="sec-chip" style="color:var(--y);border-color:rgba(251,191,36,.3)">📝 Prompt Engineering</div>
+    <div class="sec-chip" style="color:var(--y);border-color:rgba(251,191,36,.3)">🔴 Live Build</div>
+    <div class="sec-chip" style="color:var(--y);border-color:rgba(251,191,36,.3)">📦 Push</div>
+    <div class="sec-chip" style="color:var(--y);border-color:rgba(251,191,36,.3)">🌐 Deploy</div>
   </div>
 </div>
 
-<!-- S22: GITHUB = RESUME -->
-<div class="slide" data-note="Show a real GitHub profile with a green contribution graph. Students respond very well to the visual.">
-  <div class="section-badge badge-github anim-up" style="--d:.1s">💼 Career</div>
-  <h2 class="anim-up" style="--d:.2s">GitHub = Your <span class="gradient-text">Digital Resume</span></h2>
-  <ul class="checklist anim-up" style="--d:.3s;margin-top:14px">
-    <li><span class="icon">👀</span><div>Employers look at GitHub before interviews</div></li>
-    <li><span class="icon">📁</span><div>What projects have you built?</div></li>
-    <li><span class="icon">🟩</span><div>How consistently do you code? (the green squares)</div></li>
-    <li><span class="icon">📝</span><div>Do you write clear commit messages?</div></li>
-  </ul>
-  <div class="card anim-up" style="--d:.4s;margin-top:14px;border-color:rgba(52,211,153,.4);text-align:center;max-width:580px">
-    <span style="color:var(--green);font-weight:700">3–5 real projects on GitHub &gt; most certifications.<br/>Start today. 🟩🟩🟩🟩🟩</span>
-  </div>
-</div>
-
-<!-- S23: WHAT IS VERCEL -->
-<div class="slide" data-note="Say: GitHub stores your code. Vercel puts it on the internet. They work together automatically.">
-  <div class="section-badge badge-vercel anim-up" style="--d:.1s">🌐 Vercel</div>
-  <h2 class="anim-up" style="--d:.2s">What is <span class="gradient-text">Vercel?</span></h2>
-  <div class="card anim-up" style="--d:.25s;margin-bottom:14px;border-color:rgba(34,211,238,.3);text-align:center;max-width:520px">
-    <span style="color:var(--cyan);font-weight:700;font-size:1rem">GitHub stores code. Vercel puts it on the internet.</span>
-  </div>
-  <ul class="checklist anim-up" style="--d:.3s">
-    <li><span class="icon">✅</span><div>Reads your code from GitHub automatically</div></li>
-    <li><span class="icon">✅</span><div>Builds and deploys in ~60 seconds</div></li>
-    <li><span class="icon">✅</span><div>Gives you a free public URL instantly</div></li>
-    <li><span class="icon">✅</span><div>Re-deploys every time you push to GitHub</div></li>
-    <li><span class="icon">✅</span><div>Free tier is enough for all student projects</div></li>
-  </ul>
-  <div class="code-block anim-up" style="--d:.4s;margin-top:12px;text-align:center">Your URL: <span class="str">https://your-project.vercel.app</span></div>
-</div>
-
-<!-- S24: THE PIPELINE -->
-<div class="slide" data-note="Emphasise: Every single time you push. No manual steps. No servers. This is modern deployment.">
-  <div class="section-badge badge-vercel anim-up" style="--d:.1s">🌐 Vercel</div>
-  <h2 class="anim-up" style="--d:.2s">The <span class="gradient-text">Magic Pipeline</span></h2>
-  <div class="flow anim-up" style="--d:.3s;margin-top:14px">
-    <div class="flow-step">💻 Write code locally</div><div class="flow-arrow">↓</div>
-    <div class="flow-step">📦 <code>git push</code> to GitHub</div><div class="flow-arrow">↓</div>
-    <div class="flow-step">🔍 Vercel detects the push automatically</div><div class="flow-arrow">↓</div>
-    <div class="flow-step">⚙️ Vercel builds your project</div><div class="flow-arrow">↓</div>
-    <div class="flow-step" style="border-color:rgba(34,211,238,.5);color:var(--cyan)">🌐 Live URL updates in ~60 seconds ✅</div>
-  </div>
-  <div class="card anim-up" style="--d:.45s;margin-top:12px;text-align:center;max-width:460px"><strong>CODE → PUSH → LIVE. Every single time.</strong></div>
-</div>
-
-<!-- S25: LIVE DEPLOY -->
-<div class="slide" data-note="The moment the URL appears = the climax of the session. Let students open it on their phones. Give them a full minute. This is their 'I made this' moment.">
-  <div class="section-badge badge-vercel anim-up" style="--d:.1s">🔴 Live Demo</div>
-  <h2 class="anim-up" style="--d:.2s">Deploying to <span class="gradient-text">Vercel</span></h2>
-  <div class="activity-box anim-up" style="--d:.3s;margin-top:14px;border-color:rgba(34,211,238,.3);background:rgba(34,211,238,.05)">
-    <h3 style="color:var(--cyan)">🔴 Watch</h3>
-    <div class="activity-step"><div class="step-num" style="background:var(--cyan);color:#000">1</div><div class="step-text">vercel.com → Login with GitHub</div></div>
-    <div class="activity-step"><div class="step-num" style="background:var(--cyan);color:#000">2</div><div class="step-text">"Import Project" → Select our repo</div></div>
-    <div class="activity-step"><div class="step-num" style="background:var(--cyan);color:#000">3</div><div class="step-text">Click Deploy → Wait 60 seconds...</div></div>
-    <div class="activity-step"><div class="step-num" style="background:var(--cyan);color:#000">4</div><div class="step-text">🎉 <strong>Click the live URL — open it on your phone!</strong></div></div>
-  </div>
-</div>
-
-<!-- S26: FULL WORKFLOW -->
-<div class="slide" data-note="This is the synthesis slide. Pause on each step and connect it to what they just experienced.">
-  <div class="section-badge badge-flow anim-up" style="--d:.1s">🔁 The Full Loop</div>
-  <h2 class="anim-up" style="--d:.2s">The Complete <span class="gradient-text">Workflow</span></h2>
-  <div class="flow anim-up" style="--d:.3s;margin-top:12px">
-    <div class="flow-step">💡 IDEA</div><div class="flow-arrow">↓</div>
-    <div class="flow-step" style="border-color:rgba(168,85,247,.5)">🤖 Prompt Engineering — <span style="color:var(--purple)">describe what to build</span></div><div class="flow-arrow">↓</div>
-    <div class="flow-step" style="border-color:rgba(244,114,182,.5)">💻 Antigravity — <span style="color:var(--pink)">AI writes &amp; fixes code</span></div><div class="flow-arrow">↓</div>
-    <div class="flow-step" style="border-color:rgba(52,211,153,.5)">📦 GitHub — <span style="color:var(--green)">save &amp; collaborate</span></div><div class="flow-arrow">↓</div>
-    <div class="flow-step" style="border-color:rgba(34,211,238,.5)">🌐 Vercel — <span style="color:var(--cyan)">60 second deploy</span></div><div class="flow-arrow">↓</div>
-    <div class="flow-step">🚀 LIVE → Share → Improve → 🔁</div>
-  </div>
-</div>
-
-<!-- S27: WHAT YOU LEARNED -->
-<div class="slide" data-note="Don't rush this slide. Let each point land. Students often underestimate how much they just absorbed.">
-  <div class="section-badge badge-wrap anim-up" style="--d:.1s">✅ Recap</div>
-  <h2 class="anim-up" style="--d:.2s">What You <span class="gradient-text">Learned Today</span></h2>
-  <ul class="checklist anim-up" style="--d:.3s;margin-top:14px">
-    <li><span class="icon" style="color:var(--purple)">🤖</span><div><strong>Prompt Engineering</strong><span class="desc">How to communicate with AI clearly and effectively</span></div></li>
-    <li><span class="icon" style="color:var(--pink)">💻</span><div><strong>Antigravity</strong><span class="desc">How to use AI to build real software without prior coding</span></div></li>
-    <li><span class="icon" style="color:var(--green)">📦</span><div><strong>GitHub</strong><span class="desc">How to save, version, and share code professionally</span></div></li>
-    <li><span class="icon" style="color:var(--cyan)">🌐</span><div><strong>Vercel</strong><span class="desc">How to deploy a project live on the internet for free</span></div></li>
-  </ul>
-  <div class="card anim-up" style="--d:.42s;margin-top:14px;border-color:rgba(168,85,247,.4);text-align:center;max-width:600px">
-    <span style="color:var(--purple);font-weight:700">"The ability to describe what you want precisely<br/>is now the most valuable technical skill."</span>
-  </div>
-</div>
-
-<!-- S28: HOMEWORK -->
-<div class="slide" data-note="Make it feel achievable. Say: Pick one idea. Just one. Start tonight. Stuck? Ask Antigravity.">
-  <div class="section-badge badge-wrap anim-up" style="--d:.1s">🏠 This Week</div>
-  <h2 class="anim-up" style="--d:.2s">Your <span class="gradient-text-warm">Challenge</span></h2>
-  <div class="activity-box anim-up" style="--d:.3s;margin-top:12px;margin-bottom:14px">
-    <h3>Try This Week</h3>
-    <div class="activity-step"><div class="step-num">1</div><div class="step-text">Install Antigravity (free)</div></div>
-    <div class="activity-step"><div class="step-num">2</div><div class="step-text">Describe any project idea → let it build</div></div>
-    <div class="activity-step"><div class="step-num">3</div><div class="step-text">Push to GitHub → Deploy on Vercel</div></div>
-    <div class="activity-step"><div class="step-num">4</div><div class="step-text">Share your live URL 🎉</div></div>
-  </div>
-  <div class="pill-list anim-up" style="--d:.4s">
-    <div class="pill">Portfolio website</div><div class="pill">Quiz app</div>
-    <div class="pill">To-do list</div><div class="pill">Result checker</div><div class="pill">Event countdown</div>
-  </div>
-</div>
-
-<!-- S29: RESOURCES -->
-<div class="slide" data-note="Keep this slide up as students leave so they can photograph it with their phones.">
-  <div class="section-badge badge-wrap anim-up" style="--d:.1s">🔗 Resources</div>
-  <h2 class="anim-up" style="--d:.2s">Your <span class="gradient-text">Cheatsheet</span></h2>
-  <div class="grid-2 anim-up" style="--d:.3s;margin-top:14px;max-width:800px">
-    <div class="card">
-      <strong style="color:var(--cyan)">🔗 Tools (all free)</strong><br/><br/>
-      <div style="font-size:.88rem;line-height:2.2;color:var(--muted)">antigravity.dev<br/>github.com<br/>vercel.com<br/>aistudio.google.com</div>
-    </div>
-    <div class="card">
-      <strong style="color:var(--purple)">📋 3 Prompt Patterns</strong><br/><br/>
-      <div style="font-family:'Fira Code',monospace;font-size:.78rem;line-height:2;color:var(--muted)">BUILDER: Build [X] for [Y]...<br/>FIXER: Getting [error]...<br/>IMPROVER: Make it [better]...</div>
-    </div>
-    <div class="card" style="grid-column:1/-1;text-align:center">
-      <strong style="color:var(--green)">📦 The 4 Git Commands</strong>&nbsp;&nbsp;
-      <code style="font-family:'Fira Code',monospace;font-size:.84rem;color:var(--muted)">git init &nbsp;|&nbsp; git add . &nbsp;|&nbsp; git commit -m "" &nbsp;|&nbsp; git push</code>
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 12 — PROMPT ENGINEERING: THE FORMULA
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Write on the board: Role + Context + Task + Format + Constraints = Great Output. Leave it visible the whole rest of the session. Students will reference it for every activity.">
+  <div class="badge badge-y ao" style="transition-delay:.1s">📝 Prompt Engineering</div>
+  <h2 class="ao" style="transition-delay:.2s">The <span class="gy">5-Part Formula</span></h2>
+  <div class="g2 ao" style="transition-delay:.3s;margin-top:14px;max-width:900px">
+    <ul class="chk" style="max-width:100%">
+      <li><span class="ic">🎭</span><div><strong>ROLE</strong><span class="sub">"You are a Python Flask developer..."</span></div></li>
+      <li><span class="ic">📋</span><div><strong>CONTEXT</strong><span class="sub">"Building a college ERP with JSON files..."</span></div></li>
+      <li><span class="ic">🎯</span><div><strong>TASK</strong><span class="sub">"Create an attendance tracking page..."</span></div></li>
+      <li><span class="ic">📐</span><div><strong>FORMAT</strong><span class="sub">"Use HTML + CSS, no external libraries..."</span></div></li>
+      <li><span class="ic">⚠️</span><div><strong>CONSTRAINTS</strong><span class="sub">"Keep it minimal, dark theme..."</span></div></li>
+    </ul>
+    <div>
+      <div class="cmp" style="grid-template-columns:1fr;gap:9px">
+        <div class="cmp-col bad" style="border-radius:10px"><h4>❌ Vague</h4><li>"Create a form"</li><li>"Fix my code"</li><li>"Make it look better"</li></div>
+        <div class="cmp-col good" style="border-radius:10px"><h4>✅ Specific</h4><li style="font-size:.82rem">"Create HTML attendance form with checkboxes per student, date picker, submit button. Dark theme."</li><li style="font-size:.82rem">"Flask /admin returns 404 on POST. Code: [paste]. Fix it."</li></div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- S30: FINAL -->
-<div class="slide" data-note="Pause. Let the silence sit for 3 seconds after revealing this slide. Then say: Now go build something.">
-  <div class="final-box anim-up" style="--d:.2s">
-    <p style="color:var(--muted);font-size:.92rem;margin-bottom:14px">You walked in not knowing any of this.</p>
-    <h1 class="gradient-text" style="font-size:clamp(1.8rem,4vw,3rem)">You walked out a builder.</h1>
-    <p style="margin-top:14px;font-size:.97rem;color:var(--muted)">
-      Prompt engineering · AI coding · GitHub · Vercel<br/>
-      That's not beginner stuff. That's how professionals build in 2026.
-    </p>
-    <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border);font-size:.97rem;color:var(--text);font-weight:700">Now go build something. 🚀</div>
-    <p style="margin-top:10px;font-size:.82rem;color:var(--muted)">Questions? Ask now — or ask Antigravity. It never sleeps.</p>
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 13 — 3 PATTERNS (PRINTABLE)
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="PRINT THIS as a handout. Students will use Builder, Fixer, and Improver for every AI interaction they ever have. This is the most valuable slide in the deck.">
+  <div class="badge badge-y ao" style="transition-delay:.1s">📋 Cheatsheet — Print This</div>
+  <h2 class="ao" style="transition-delay:.2s">3 Patterns That <span class="gy">Always Work</span></h2>
+  <div style="display:flex;flex-direction:column;gap:11px;width:100%;max-width:780px;margin-top:14px" class="ao" style="transition-delay:.3s">
+    <div class="code"><span class="kw">🔨 BUILDER:</span>  "Build <span class="hl">[feature]</span> for <span class="hl">[project]</span>. It should <span class="hl">[requirements]</span>. Use <span class="hl">[tech]</span>. Do not use <span class="hl">[restrictions]</span>."</div>
+    <div class="code"><span class="kw">🐛 FIXER:</span>    "Getting <span class="hl">[error]</span> when I <span class="hl">[action]</span>. Here is my code: <span class="hl">[paste code]</span>. What is wrong? Fix it."</div>
+    <div class="code"><span class="kw">✨ IMPROVER:</span> "Here is my current <span class="hl">[thing]</span>. I want it to <span class="hl">[better how]</span>. Keep <span class="hl">[what to preserve]</span> the same."</div>
+  </div>
+  <div class="card c-p ao" style="transition-delay:.42s;margin-top:14px;text-align:center;max-width:560px">
+    <span style="color:var(--p);font-weight:700">These 3 patterns cover 95% of all AI interactions you will ever need.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 14 — ACTIVITY #1
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Type all 3 prompts live. Show outputs side by side. The difference in quality is immediately obvious — students won't need you to explain it. Let the demo speak.">
+  <div class="badge badge-y ao" style="transition-delay:.1s">🎯 Activity #1 — 5 minutes</div>
+  <h2 class="ao" style="transition-delay:.2s">Good vs Bad <span class="gy">Prompt Live Demo</span></h2>
+  <div class="act-box ao" style="transition-delay:.3s;margin-top:14px">
+    <h3 style="color:var(--y);margin-bottom:14px">🔴 Watch the difference in real time</h3>
+    <div class="act-step"><div class="sn">1</div><div class="st">Type: <em style="color:var(--mu)">"Make a website"</em> → See result</div></div>
+    <div class="act-step"><div class="sn">2</div><div class="st">Type: <em style="color:var(--mu)">"Make a login page"</em> → See result</div></div>
+    <div class="act-step"><div class="sn">3</div><div class="st">Type: <em style="color:var(--c)">"Build a login page for a college ERP. Username + password fields, submit button, dark theme with purple accents, error message if login fails."</em></div></div>
+    <div class="act-step"><div class="sn">4</div><div class="st">Ask class: <strong>"What's different about #3?"</strong></div></div>
+  </div>
+  <div class="card c-p ao" style="transition-delay:.42s;margin-top:12px;text-align:center;max-width:560px">
+    <strong style="color:var(--p)">The demo says it all. Don't over-explain — let students feel the difference.</strong>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 15 — ACTIVITY #2
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Walk around and read their prompts. Pick 2-3 best ones and type them live. Students whose prompts get built will remember this session forever.">
+  <div class="badge badge-y ao" style="transition-delay:.1s">🎯 Activity #2 — 5 minutes</div>
+  <h2 class="ao" style="transition-delay:.2s">Pair <span class="gy">Prompt Challenge</span></h2>
+  <div class="act-box ao" style="transition-delay:.3s;margin-top:14px">
+    <h3 style="color:var(--y);margin-bottom:14px">👥 Work in pairs — best prompt gets built live 🏆</h3>
+    <div class="act-step"><div class="sn">1</div><div class="st">Write a prompt for a <strong>"Student Dashboard"</strong> page using the 5-part formula</div></div>
+    <div class="act-step"><div class="sn">2</div><div class="st">Review your partner's prompt — does it have Role, Context, Task, Format, Constraints?</div></div>
+    <div class="act-step"><div class="sn">3</div><div class="st">Improve it together and finalise</div></div>
+    <div class="act-step"><div class="sn">4</div><div class="st">Instructor picks the 2 best prompts → types them into Antigravity LIVE</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 16 — LIVE BUILD WITH ANTIGRAVITY
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Narrate as you type. 'Watch — it reads the existing files first. Now it understands where to add the code. Now it writes the HTML in exactly the right template.' Go slowly. Students are watching every line.">
+  <div class="badge badge-r ao" style="transition-delay:.1s"><span class="live-dot"></span>&nbsp;LIVE DEMO</div>
+  <h2 class="ao" style="transition-delay:.2s"><span class="gt">Antigravity</span> Builds a Feature</h2>
+  <div class="act-box ao" style="transition-delay:.3s;margin-top:14px;border-color:rgba(244,114,182,.28);background:rgba(244,114,182,.05)">
+    <h3 style="color:var(--pk);margin-bottom:14px">🔴 Watch every step carefully</h3>
+    <div class="act-step"><div class="sn" style="background:var(--pk)">1</div><div class="st">Open the ERP project — show all files in sidebar</div></div>
+    <div class="act-step"><div class="sn" style="background:var(--pk)">2</div><div class="st">Type the winning prompt from Activity #2</div></div>
+    <div class="act-step"><div class="sn" style="background:var(--pk)">3</div><div class="st">Watch AI read existing files → write matching code</div></div>
+    <div class="act-step"><div class="sn" style="background:var(--pk)">4</div><div class="st">Refresh browser → feature is live ✅</div></div>
+  </div>
+  <div class="card c-p ao" style="transition-delay:.42s;margin-top:12px;text-align:center;max-width:560px">
+    <span style="color:var(--p);font-weight:700">The PROMPT was the skill. You described it. AI built it.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 17 — ACTIVITY #3
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Most energetic part of the session. Let it be loud and fun. Build the features students shout out. The room gets excited when they see their ideas appear on screen instantly.">
+  <div class="badge badge-y ao" style="transition-delay:.1s">🎯 Activity #3 — Open Round</div>
+  <h2 class="ao" style="transition-delay:.2s">Students <span class="gy">Call Features</span></h2>
+  <p class="ao" style="transition-delay:.25s">Shout out any feature — instructor builds it live using Antigravity.</p>
+  <div class="pills ao" style="transition-delay:.32s;margin:16px 0;gap:11px">
+    <div class="pill" style="border-color:rgba(251,191,36,.35);color:var(--y)">"Search bar for students"</div>
+    <div class="pill" style="border-color:rgba(251,191,36,.35);color:var(--y)">"Student count on dashboard"</div>
+    <div class="pill" style="border-color:rgba(251,191,36,.35);color:var(--y)">"Logout confirmation popup"</div>
+    <div class="pill" style="border-color:rgba(168,85,247,.35);color:var(--p)">"Dark mode toggle"</div>
+    <div class="pill" style="border-color:rgba(34,211,238,.35);color:var(--c)">"Your idea..."</div>
+    <div class="pill" style="border-color:rgba(52,211,153,.35);color:var(--g)">"Your idea..."</div>
+  </div>
+  <div class="card c-y ao" style="transition-delay:.4s;text-align:center;max-width:580px">
+    <strong style="color:var(--y)">🏆 The PROMPT is the skill — not programming knowledge.<br/>If you can describe it, AI can build it.</strong>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 18 — LIVE: PUSH TO GITHUB
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Go slowly on the git commands. Point out that .env is NOT in the file list on GitHub. Say: 'This is why .gitignore exists. It protected the project automatically.'">
+  <div class="badge badge-r ao" style="transition-delay:.1s"><span class="live-dot"></span>&nbsp;LIVE DEMO</div>
+  <h2 class="ao" style="transition-delay:.2s">Pushing to <span class="gg">GitHub</span></h2>
+  <div class="g2 ao" style="transition-delay:.3s;margin-top:14px;max-width:880px">
+    <div class="act-box" style="border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.05)">
+      <h3 style="color:var(--g);margin-bottom:12px">🔴 Steps</h3>
+      <div class="act-step"><div class="sn" style="background:var(--g)">1</div><div class="st">github.com → Create new repo</div></div>
+      <div class="act-step"><div class="sn" style="background:var(--g)">2</div><div class="st">Verify .gitignore protects .env</div></div>
+      <div class="act-step"><div class="sn" style="background:var(--g)">3</div><div class="st">Run the 4 commands →</div></div>
+      <div class="act-step"><div class="sn" style="background:var(--g)">4</div><div class="st">Code appears on GitHub ✅</div></div>
+    </div>
+    <div>
+      <div class="code" id="git-code">
+        <div id="gc1" style="opacity:.3"><span class="kw">git add .</span></div>
+        <div id="gc2" style="opacity:.3"><span class="kw">git commit</span> <span class="str">-m "ERP system"</span></div>
+        <div id="gc3" style="opacity:.3"><span class="kw">git remote add</span> origin https://...</div>
+        <div id="gc4" style="opacity:.3"><span class="kw">git push</span> <span class="str">-u origin main</span></div>
+        <div id="gc5" style="opacity:0;margin-top:8px;color:var(--g)">✅ Pushed successfully!</div>
+      </div>
+      <div class="card" style="margin-top:10px;border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.06);text-align:center;padding:10px">
+        <span style="color:var(--r);font-weight:700;font-size:.86rem">⚠️ .env is NOT visible on GitHub — protected ✅</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 19 — LIVE: DEPLOY TO VERCEL
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="The moment the URL appears = climax of the session. Tell students to open it on their phones. Give them a full 60 seconds. Let the 'I made this' moment happen. Don't rush it.">
+  <div class="badge badge-r ao" style="transition-delay:.1s"><span class="live-dot"></span>&nbsp;LIVE DEPLOY</div>
+  <h2 class="ao" style="transition-delay:.2s">Going <span class="gt">Live on Vercel</span></h2>
+  <div class="g2 ao" style="transition-delay:.3s;margin-top:14px;max-width:880px">
+    <div class="act-box" style="border-color:rgba(34,211,238,.28);background:rgba(34,211,238,.05)">
+      <h3 style="color:var(--c);margin-bottom:12px">🔴 Steps</h3>
+      <div class="act-step"><div class="sn" style="background:var(--c);color:#000">1</div><div class="st">vercel.com → Login with GitHub</div></div>
+      <div class="act-step"><div class="sn" style="background:var(--c);color:#000">2</div><div class="st">Import Project → select our repo</div></div>
+      <div class="act-step"><div class="sn" style="background:var(--c);color:#000">3</div><div class="st">Click Deploy → wait 60 seconds...</div></div>
+      <div class="act-step"><div class="sn" style="background:var(--c);color:#000">4</div><div class="st">🎉 Open URL on your phone RIGHT NOW</div></div>
+    </div>
+    <div>
+      <div class="flow">
+        <div class="fstep">CODE locally</div><div class="farrow">↓</div>
+        <div class="fstep"><code>git push</code></div><div class="farrow">↓</div>
+        <div class="fstep">Vercel detects</div><div class="farrow">↓</div>
+        <div class="fstep">Builds automatically</div><div class="farrow">↓</div>
+        <div class="fstep" style="border-color:rgba(34,211,238,.5);color:var(--c)">🌐 your-project.vercel.app ✅</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 20 — FULL WORKFLOW + RECAP + RESOURCES
+═══════════════════════════════════════════════════════ -->
+<div class="slide" data-note="Connect every step to something the students just experienced. 'Remember when Antigravity read the files? That was step 3. Remember the GitHub push error? That was step 4. Now you own this workflow.'">
+  <div class="badge badge-p ao" style="transition-delay:.1s">🔁 Everything Together</div>
+  <h2 class="ao" style="transition-delay:.2s">The <span class="gt">Complete Workflow</span></h2>
+  <div class="g3 ao" style="transition-delay:.3s;margin-top:14px;max-width:960px">
+    <div>
+      <div class="flow" style="max-width:100%">
+        <div class="fstep">💡 IDEA</div><div class="farrow">↓</div>
+        <div class="fstep" style="border-color:rgba(251,191,36,.4);font-size:.86rem">📝 Prompt Engineering</div><div class="farrow">↓</div>
+        <div class="fstep" style="border-color:rgba(244,114,182,.4);font-size:.86rem">💻 Antigravity builds it</div><div class="farrow">↓</div>
+        <div class="fstep" style="border-color:rgba(52,211,153,.4);font-size:.86rem">📦 GitHub → save &amp; share</div><div class="farrow">↓</div>
+        <div class="fstep" style="border-color:rgba(34,211,238,.4);font-size:.86rem">🌐 Vercel → live URL</div><div class="farrow">↓</div>
+        <div class="fstep" style="border-color:rgba(168,85,247,.5);color:var(--p);font-size:.86rem">🚀 LIVE → Improve → Repeat</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card c-y" style="padding:14px 16px">
+        <strong style="color:var(--y);font-size:.88rem">🏠 Try This Week</strong>
+        <div style="font-size:.82rem;color:var(--mu);margin-top:6px;line-height:1.8">
+          1. Install Antigravity (free)<br/>
+          2. Describe any project idea<br/>
+          3. Push to GitHub<br/>
+          4. Deploy on Vercel<br/>
+          5. Share your live URL 🎉
+        </div>
+      </div>
+      <div class="card" style="padding:14px 16px">
+        <strong style="font-size:.88rem;color:var(--c)">🔗 Free Tools</strong>
+        <div style="font-family:'Fira Code',monospace;font-size:.78rem;color:var(--mu);margin-top:6px;line-height:1.9">
+          antigravity.dev<br/>
+          github.com<br/>
+          vercel.com<br/>
+          aistudio.google.com
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="card" style="padding:14px 16px">
+        <strong style="font-size:.88rem;color:var(--p)">📋 3 Prompt Patterns</strong>
+        <div style="font-family:'Fira Code',monospace;font-size:.76rem;color:var(--mu);margin-top:6px;line-height:2">
+          BUILDER: Build [X] for [Y]...<br/>
+          FIXER: Getting [error]...<br/>
+          IMPROVER: Make [thing] better...
+        </div>
+      </div>
+      <div class="card" style="padding:14px 16px">
+        <strong style="font-size:.88rem;color:var(--g)">💡 Beginner Ideas</strong>
+        <div style="font-size:.8rem;color:var(--mu);margin-top:6px;line-height:1.9">
+          Portfolio site<br/>
+          Quiz app for class<br/>
+          Event countdown timer<br/>
+          Student result checker
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 21 — FINAL
+═══════════════════════════════════════════════════════ -->
+<div class="slide" id="final-slide" data-note="Pause 3 full seconds after this slide appears. Let the silence sit. Then quietly say: 'Now go build something.' That's the end of the session.">
+  <div style="background:linear-gradient(135deg,rgba(168,85,247,.15),rgba(34,211,238,.1));border:1px solid rgba(168,85,247,.35);border-radius:24px;padding:44px 60px;max-width:740px;text-align:center" class="ao" style="transition-delay:.2s" id="final-box">
+    <p style="color:var(--mu);font-size:.9rem;margin-bottom:12px">You walked in not knowing any of this.</p>
+    <h1 style="font-size:clamp(1.8rem,4.5vw,3.2rem)" class="gt">You walked out a builder.</h1>
+    <div style="margin-top:20px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
+      <div class="pill" style="border-color:rgba(251,191,36,.35);color:var(--y)">Prompt Engineering</div>
+      <div class="pill" style="border-color:rgba(244,114,182,.35);color:var(--pk)">Antigravity</div>
+      <div class="pill" style="border-color:rgba(52,211,153,.35);color:var(--g)">GitHub</div>
+      <div class="pill" style="border-color:rgba(34,211,238,.35);color:var(--c)">Vercel</div>
+    </div>
+    <p style="margin-top:18px;color:var(--mu);font-size:.94rem;line-height:1.7">That is not beginner content.<br/>That is how professionals build in 2026.</p>
+    <div style="margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.1);font-size:1.15rem;font-weight:800" id="final-tw"></div>
+    <p style="margin-top:10px;font-size:.8rem;color:var(--mu)">Questions? Ask now — or ask Antigravity. It never sleeps. 🤖</p>
   </div>
 </div>
 
 </div><!-- /deck -->
 
-<div id="nav">
-  <button class="nav-btn" onclick="prevSlide()">←</button>
-  <span id="slide-counter">1 / 30</span>
-  <button class="nav-btn" onclick="nextSlide()">→</button>
+<!-- DOTS NAV -->
+<div id="dots"></div>
+<!-- NAV BTNS -->
+<div id="navbtns">
+  <button class="nb" onclick="go(cur-1)">←</button>
+  <button class="nb" onclick="go(cur+1)">→</button>
 </div>
+<div id="slide-info"></div>
+<button id="snbtn" onclick="toggleNote()">💬 Notes (N)</button>
+<div id="snote"></div>
+<canvas id="confetti"></canvas>
 
 <script>
-const slides=document.querySelectorAll('.slide'),bar=document.getElementById('progress-bar'),counter=document.getElementById('slide-counter'),noteBox=document.getElementById('speaker-note'),keyHint=document.getElementById('key-hint');
-let current=0,notesVisible=false;
-function goTo(n){
-  slides[current].classList.remove('active');
-  slides[current].classList.add('exit-left');
-  setTimeout(()=>slides[current].classList.remove('exit-left'),450);
-  current=Math.max(0,Math.min(n,slides.length-1));
-  slides[current].classList.add('active');
-  slides[current].querySelectorAll('.anim-up').forEach(el=>{el.style.animation='none';el.offsetHeight;el.style.animation='';});
-  bar.style.width=((current+1)/slides.length*100)+'%';
-  counter.textContent=(current+1)+' / '+slides.length;
-  if(notesVisible)updateNote();
+// ─── CANVAS PARTICLES ────────────────────────────────
+const cv=document.getElementById('bg');
+const cx=cv.getContext('2d');
+let W,H,pts=[];
+function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;pts=[];for(let i=0;i<90;i++)pts.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+.3,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,o:Math.random()*.5+.15})}
+resize();window.addEventListener('resize',resize);
+function drawPts(){cx.clearRect(0,0,W,H);pts.forEach(p=>{cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);cx.fillStyle=`rgba(168,85,247,${p.o})`;cx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0});requestAnimationFrame(drawPts)}
+drawPts();
+
+// ─── SLIDES ──────────────────────────────────────────
+const slides=document.querySelectorAll('.slide');
+const TOTAL=slides.length;
+let cur=0,notesOn=false;
+
+// Section labels for info bar
+const secLabels=['Intro','Hook','│','AI Basics','Types of AI','LLMs & Tools','│','Antigravity','GitHub','Vercel','│','Formula','3 Patterns','Activity #1','Activity #2','Live Build','Activity #3','Live Push','Live Deploy','Workflow','Closing'];
+
+// Build dots
+const dotsEl=document.getElementById('dots');
+slides.forEach((_,i)=>{
+  const d=document.createElement('div');
+  if(slides[i].classList.contains('sec-break')){d.className='dot sec';d.style.pointerEvents='none';}
+  else{d.className='dot';d.onclick=()=>go(i);}
+  dotsEl.appendChild(d);
+});
+const dotEls=document.querySelectorAll('.dot');
+
+function go(n){
+  if(n<0||n>=TOTAL)return;
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('prev');
+  setTimeout(()=>{slides[cur].classList.remove('prev')},520);
+  cur=n;
+  slides[cur].classList.add('active');
+  // Reset: remove 'in' so elements return to opacity:0 via CSS class only (no inline styles)
+  slides[cur].querySelectorAll('.ao').forEach(el=>{
+    el.classList.remove('in');
+    el.style.opacity='';   // clear any leftover inline style
+    el.style.transform=''; // clear any leftover inline style
+  });
+  // Force reflow then animate in via class
+  void slides[cur].offsetHeight;
+  setTimeout(()=>{
+    slides[cur].querySelectorAll('.ao').forEach(el=>el.classList.add('in'));
+  },40);
+  updateUI();
+  onEnter(cur);
 }
-function nextSlide(){if(current<slides.length-1)goTo(current+1);}
-function prevSlide(){if(current>0)goTo(current-1);}
-function updateNote(){const note=slides[current].dataset.note||'';noteBox.innerHTML=note?'<strong>Speaker Note:</strong> '+note:'<em style="color:var(--muted)">No note for this slide.</em>';}
-function toggleNote(){notesVisible=!notesVisible;noteBox.classList.toggle('visible',notesVisible);if(notesVisible)updateNote();}
+
+function updateUI(){
+  document.getElementById('prog').style.width=((cur+1)/TOTAL*100)+'%';
+  dotEls.forEach((d,i)=>{if(!d.classList.contains('sec'))d.classList.toggle('on',i===cur)});
+  document.getElementById('slide-info').textContent=(cur+1)+' / '+TOTAL+(secLabels[cur]&&secLabels[cur]!=='│'?' · '+secLabels[cur]:'');
+  if(notesOn)showNote();
+}
+
+// On-enter per-slide effects
+function onEnter(i){
+  // Slide 18 — git commands animate in sequence
+  if(i===17){
+    ['gc1','gc2','gc3','gc4'].forEach((id,j)=>{
+      setTimeout(()=>{const el=document.getElementById(id);if(el)el.style.opacity='1';},600+j*550);
+    });
+    setTimeout(()=>{const el=document.getElementById('gc5');if(el)el.style.opacity='1';},600+4*550);
+  }
+  // Slide 21 — typewriter + confetti burst
+  if(i===20){
+    typewriter('final-tw','Now go build something. 🚀',60);
+    setTimeout(burst,800);
+  }
+}
+
+// Initial trigger — clear any inline styles first, then animate in via class
+setTimeout(()=>{
+  slides[0].querySelectorAll('.ao').forEach(el=>{
+    el.style.opacity='';
+    el.style.transform='';
+    el.classList.add('in');
+  });
+},150);
+
+// Keyboard
 document.addEventListener('keydown',e=>{
-  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();nextSlide();}
-  if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();prevSlide();}
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();go(cur-1);}
   if(e.key==='n'||e.key==='N')toggleNote();
 });
+
+// Touch swipe
 let tx=0;
-document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX;});
-document.addEventListener('touchend',e=>{const dx=tx-e.changedTouches[0].screenX;if(Math.abs(dx)>50){dx>0?nextSlide():prevSlide();}});
-document.getElementById('deck').addEventListener('click',e=>{if(e.target.closest('#nav')||e.target.closest('#speaker-btn'))return;e.clientX>window.innerWidth/2?nextSlide():prevSlide();});
-setTimeout(()=>keyHint.classList.add('hidden'),5000);
-goTo(0);
+document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX});
+document.addEventListener('touchend',e=>{const dx=tx-e.changedTouches[0].screenX;if(Math.abs(dx)>50){dx>0?go(cur+1):go(cur-1);}});
+
+// Click nav
+document.getElementById('deck').addEventListener('click',e=>{
+  if(e.target.closest('#navbtns')||e.target.closest('#dots')||e.target.closest('#snbtn')||e.target.closest('.flip-card'))return;
+  e.clientX>window.innerWidth/2?go(cur+1):go(cur-1);
+});
+
+// Speaker notes
+function toggleNote(){notesOn=!notesOn;if(notesOn)showNote();else document.getElementById('snote').style.display='none';}
+function showNote(){const note=slides[cur].dataset.note||'';const el=document.getElementById('snote');el.style.display='block';el.innerHTML=note?'<strong>Speaker:</strong> '+note:'<em style="color:var(--mu)">No note for this slide.</em>';}
+
+// Typewriter
+function typewriter(id,text,speed){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent='';el.classList.add('tw');
+  let i=0;const t=setInterval(()=>{el.textContent+=text[i++];if(i>=text.length){clearInterval(t);el.classList.remove('tw');}},speed);
+}
+
+// Confetti burst (canvas-based)
+function burst(){
+  const cc=document.getElementById('confetti');
+  cc.style.display='block';
+  cc.width=window.innerWidth;cc.height=window.innerHeight;
+  const ctx=cc.getContext('2d');
+  const cols=['#a855f7','#22d3ee','#34d399','#fbbf24','#f472b6','#ef4444'];
+  const particles=[];
+  for(let i=0;i<160;i++){
+    particles.push({x:window.innerWidth/2,y:window.innerHeight/2,vx:(Math.random()-0.5)*18,vy:(Math.random()-0.5)*18-4,r:Math.random()*5+2,c:cols[Math.floor(Math.random()*cols.length)],a:1,rot:Math.random()*360,rv:(Math.random()-0.5)*8});
+  }
+  let frame=0;
+  function draw(){
+    ctx.clearRect(0,0,cc.width,cc.height);
+    particles.forEach(p=>{
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
+      ctx.globalAlpha=p.a;ctx.fillStyle=p.c;
+      ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
+      ctx.restore();
+      p.x+=p.vx;p.y+=p.vy;p.vy+=0.35;p.a-=0.015;p.rot+=p.rv;
+    });
+    frame++;
+    if(frame<120)requestAnimationFrame(draw);
+    else cc.style.display='none';
+  }
+  draw();
+}
+
+updateUI();
 </script>
 </body>
 </html>
